@@ -928,33 +928,37 @@ export default function App() {
   // ═══════════════════════════════════════════════════════════════
   // FIREBASE CLOUD REAL-TIME MULTI-DEVICE SYNCHRONIZATION
   // ═══════════════════════════════════════════════════════════════
+  // FIREBASE CLOUD REAL-TIME MULTI-DEVICE SYNCHRONIZATION
+  // ═══════════════════════════════════════════════════════════════
+  const latestStateRef = useRef({});
+  latestStateRef.current = {
+    accounts,
+    transactions,
+    budgetLimits,
+    savingsGoals,
+    recurringTxs,
+    debts,
+    autoSavePlan,
+    customIncomeCats,
+    customExpenseCats,
+    userXp,
+    streakDays,
+    completed52Weeks,
+    completed30Days,
+    currency,
+    exchangeRate,
+  };
+
   const handlePushToCloud = useCallback(async (targetUid, notify = false) => {
     const uid = targetUid || currentUser?.uid;
     if (!uid || !db) return;
     try {
       setCloudSyncStatus('syncing');
-      await setDoc(
-        doc(db, 'users', uid),
-        {
-          accounts,
-          transactions,
-          budgetLimits,
-          savingsGoals,
-          recurringTxs,
-          debts,
-          autoSavePlan,
-          customIncomeCats,
-          customExpenseCats,
-          userXp,
-          streakDays,
-          completed52Weeks,
-          completed30Days,
-          currency,
-          exchangeRate,
-          lastDeviceSyncedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
+      const payload = {
+        ...latestStateRef.current,
+        lastDeviceSyncedAt: new Date().toISOString(),
+      };
+      await setDoc(doc(db, 'users', uid), payload, { merge: true });
       setCloudSyncStatus('synced');
       const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setCloudLastSynced(nowStr);
@@ -972,27 +976,9 @@ export default function App() {
         }
       }
     }
-  }, [
-    accounts,
-    transactions,
-    budgetLimits,
-    savingsGoals,
-    recurringTxs,
-    debts,
-    autoSavePlan,
-    customIncomeCats,
-    customExpenseCats,
-    userXp,
-    streakDays,
-    completed52Weeks,
-    completed30Days,
-    currency,
-    exchangeRate,
-    currentUser,
-    showToast,
-  ]);
+  }, [currentUser?.uid, showToast]);
 
-  // Auth Listener and Remote Firestore Real-Time Subscription
+  // Auth Listener and Remote Firestore Real-Time Subscription (Runs once, never resets on local edits)
   useEffect(() => {
     if (!auth || !db) return;
     let unsubscribeSnapshot = null;
@@ -1015,9 +1001,16 @@ export default function App() {
         setCloudSyncStatus('syncing');
         const userDocRef = doc(db, 'users', user.uid);
 
+        if (unsubscribeSnapshot) unsubscribeSnapshot();
+
         unsubscribeSnapshot = onSnapshot(
           userDocRef,
           (docSnap) => {
+            // CRITICAL: Ignore local pending writes so local user input/edit/delete is NEVER reverted!
+            if (docSnap.metadata?.hasPendingWrites) {
+              return;
+            }
+
             if (docSnap.exists()) {
               const data = docSnap.data();
               isRemoteUpdatingRef.current = true;
@@ -1040,7 +1033,7 @@ export default function App() {
               setCloudLastSynced(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
               setTimeout(() => {
                 isRemoteUpdatingRef.current = false;
-              }, 400);
+              }, 300);
             } else {
               // Brand new user in Firestore: push local data up to cloud
               handlePushToCloud(user.uid);
@@ -1069,7 +1062,7 @@ export default function App() {
       unsubscribeAuth();
       if (unsubscribeSnapshot) unsubscribeSnapshot();
     };
-  }, [handlePushToCloud]);
+  }, []);
 
   // Debounced auto-save to Cloud Firestore on local data updates
   useEffect(() => {
@@ -1077,7 +1070,7 @@ export default function App() {
     if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     syncTimeoutRef.current = setTimeout(() => {
       handlePushToCloud(currentUser.uid);
-    }, 850);
+    }, 600);
     return () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     };
@@ -1097,7 +1090,7 @@ export default function App() {
     completed30Days,
     currency,
     exchangeRate,
-    currentUser,
+    currentUser?.uid,
     handlePushToCloud,
   ]);
 
