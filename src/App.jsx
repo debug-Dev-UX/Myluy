@@ -11,7 +11,7 @@ import {
   ShoppingBag, HeartPulse, Smartphone, Dumbbell, Plane, Film,
   GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift,
   CircleStop, Play, CalendarClock, Infinity as InfinityIcon,
-  ArrowDownLeft, History, Minus
+  ArrowDownLeft, History, Minus, Eye, EyeOff, Radio
 } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
@@ -641,18 +641,18 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Pure Zero Data States (NO DEMO DATA PRE-LOADED)
-  const [accounts, setAccounts] = useState(() => loadLS('myluy_accounts', DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 }))));
-  const [transactions, setTransactions] = useState(() => loadLS('myluy_txs', []));
-  const [customIncomeCats, setCustomIncomeCats] = useState(() => loadLS('myluy_inc_cats', []));
-  const [customExpenseCats, setCustomExpenseCats] = useState(() => loadLS('myluy_exp_cats', []));
-  const [budgetLimits, setBudgetLimits] = useState(() => loadLS('myluy_budgets', []));
-  const [savingsGoals, setSavingsGoals] = useState(() => loadLS('myluy_goals', []));
-  const [recurringTxs, setRecurringTxs] = useState(() => loadLS('myluy_recurring', []));
-  const [debts, setDebts] = useState(() => loadLS('myluy_debts', []));
+  // Pure Zero Data States (NO DEMO DATA PRE-LOADED - 100% CLEAN START FROM 0)
+  const [accounts, setAccounts] = useState(() => loadLS('myluy_v3_accounts', DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 }))));
+  const [transactions, setTransactions] = useState(() => loadLS('myluy_v3_txs', []));
+  const [customIncomeCats, setCustomIncomeCats] = useState(() => loadLS('myluy_v3_inc_cats', []));
+  const [customExpenseCats, setCustomExpenseCats] = useState(() => loadLS('myluy_v3_exp_cats', []));
+  const [budgetLimits, setBudgetLimits] = useState(() => loadLS('myluy_v3_budgets', []));
+  const [savingsGoals, setSavingsGoals] = useState(() => loadLS('myluy_v3_goals', []));
+  const [recurringTxs, setRecurringTxs] = useState(() => loadLS('myluy_v3_recurring', []));
+  const [debts, setDebts] = useState(() => loadLS('myluy_v3_debts', []));
 
-  // Direct Monthly Auto-Save (Non-Stop)
-  const [autoSavePlan, setAutoSavePlan] = useState(() => loadLS('myluy_autosave', {
+  // Direct Monthly Auto-Save (Non-Stop) - Pure Zero
+  const [autoSavePlan, setAutoSavePlan] = useState(() => loadLS('myluy_v3_autosave', {
     id: 'autosave_main',
     title: 'Monthly Direct Stash',
     amount: 50,
@@ -665,17 +665,18 @@ export default function App() {
     history: [],
   }));
 
-  // Gamification & Streaks
-  const [userXp, setUserXp] = useState(() => loadLS('myluy_xp', 0));
-  const [streakDays, setStreakDays] = useState(() => loadLS('myluy_streak', 1));
-  const [completed52Weeks, setCompleted52Weeks] = useState(() => loadLS('myluy_c52', []));
-  const [completed30Days, setCompleted30Days] = useState(() => loadLS('myluy_c30', []));
+  // Gamification & Streaks - Clean Zero
+  const [userXp, setUserXp] = useState(() => loadLS('myluy_v3_xp', 0));
+  const [streakDays, setStreakDays] = useState(() => loadLS('myluy_v3_streak', 1));
+  const [completed52Weeks, setCompleted52Weeks] = useState(() => loadLS('myluy_v3_c52', []));
+  const [completed30Days, setCompleted30Days] = useState(() => loadLS('myluy_v3_c30', []));
 
   // Transaction Filters & Sorts
   const [txTypeFilter, setTxTypeFilter] = useState('all');
   const [txCategoryFilter, setTxCategoryFilter] = useState('all');
   const [txSearchQuery, setTxSearchQuery] = useState('');
   const [txSortOption, setTxSortOption] = useState('newest');
+  const [hideBalance, setHideBalance] = useState(() => loadLS('myluy_hide_bal', false));
 
   // Modals
   const [txModalOpen, setTxModalOpen] = useState(false);
@@ -775,19 +776,20 @@ export default function App() {
   useEffect(() => saveLS('myluy_lang', lang), [lang]);
   useEffect(() => saveLS('myluy_curr', currency), [currency]);
   useEffect(() => saveLS('myluy_rate', exchangeRate), [exchangeRate]);
-  useEffect(() => saveLS('myluy_accounts', accounts), [accounts]);
-  useEffect(() => saveLS('myluy_txs', transactions), [transactions]);
-  useEffect(() => saveLS('myluy_inc_cats', customIncomeCats), [customIncomeCats]);
-  useEffect(() => saveLS('myluy_exp_cats', customExpenseCats), [customExpenseCats]);
-  useEffect(() => saveLS('myluy_budgets', budgetLimits), [budgetLimits]);
-  useEffect(() => saveLS('myluy_goals', savingsGoals), [savingsGoals]);
-  useEffect(() => saveLS('myluy_recurring', recurringTxs), [recurringTxs]);
-  useEffect(() => saveLS('myluy_debts', debts), [debts]);
-  useEffect(() => saveLS('myluy_xp', userXp), [userXp]);
-  useEffect(() => saveLS('myluy_streak', streakDays), [streakDays]);
-  useEffect(() => saveLS('myluy_c52', completed52Weeks), [completed52Weeks]);
-  useEffect(() => saveLS('myluy_c30', completed30Days), [completed30Days]);
-  useEffect(() => saveLS('myluy_autosave', autoSavePlan), [autoSavePlan]);
+  useEffect(() => saveLS('myluy_v3_accounts', accounts), [accounts]);
+  useEffect(() => saveLS('myluy_v3_txs', transactions), [transactions]);
+  useEffect(() => saveLS('myluy_v3_inc_cats', customIncomeCats), [customIncomeCats]);
+  useEffect(() => saveLS('myluy_v3_exp_cats', customExpenseCats), [customExpenseCats]);
+  useEffect(() => saveLS('myluy_v3_budgets', budgetLimits), [budgetLimits]);
+  useEffect(() => saveLS('myluy_v3_goals', savingsGoals), [savingsGoals]);
+  useEffect(() => saveLS('myluy_v3_recurring', recurringTxs), [recurringTxs]);
+  useEffect(() => saveLS('myluy_v3_debts', debts), [debts]);
+  useEffect(() => saveLS('myluy_v3_xp', userXp), [userXp]);
+  useEffect(() => saveLS('myluy_v3_streak', streakDays), [streakDays]);
+  useEffect(() => saveLS('myluy_v3_c52', completed52Weeks), [completed52Weeks]);
+  useEffect(() => saveLS('myluy_v3_c30', completed30Days), [completed30Days]);
+  useEffect(() => saveLS('myluy_v3_autosave', autoSavePlan), [autoSavePlan]);
+  useEffect(() => saveLS('myluy_hide_bal', hideBalance), [hideBalance]);
 
   const t = dict[lang] || dict.en;
 
@@ -1536,71 +1538,83 @@ export default function App() {
             ═══════════════════════════════════════════════════════════════ */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            {/* Top Stat Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {/* Total Balance */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-indigo-500/30 transition-all">
-                <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
-                  <span className="text-xs font-semibold">{t.totalBalance}</span>
-                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 flex items-center justify-center">
-                    <Wallet size={16} />
+            {/* ─── NEO-FINTECH VIRTUAL SMART CARD HERO ─── */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-6 sm:p-7 text-white shadow-2xl border border-indigo-500/30">
+              {/* Background ambient lighting */}
+              <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-indigo-500/25 blur-3xl pointer-events-none" />
+              <div className="absolute -left-12 -bottom-12 w-64 h-64 rounded-full bg-purple-500/20 blur-3xl pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />
+
+              {/* Card Header: Chip, Contactless, Platinum branding & currency badge */}
+              <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-7 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-[1.5px] shadow-sm flex items-center justify-center">
+                    <div className="w-full h-full bg-amber-400/30 rounded-[4px] border border-amber-900/40 grid grid-cols-2 gap-0.5 p-0.5">
+                      <div className="border-r border-b border-amber-900/40"></div>
+                      <div className="border-b border-amber-900/40"></div>
+                      <div className="border-r border-amber-900/40"></div>
+                      <div></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-white/80">
+                    <Radio size={14} className="rotate-90 text-indigo-300" />
+                    <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-indigo-200/90">MY LUY PLATINUM</span>
                   </div>
                 </div>
-                <div className="text-lg sm:text-2xl font-bold tracking-tight text-[var(--text-primary)]">
-                  {formatMoney(totals.totalBalance)}
-                </div>
-                <div className="text-[11px] text-[var(--text-muted)] mt-1 flex items-center gap-1 font-medium">
-                  <span>{accounts.length} {t.accountsTab}</span>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-full bg-white/10 text-white/90 text-[10px] font-bold tracking-wide uppercase border border-white/10 backdrop-blur-md">
+                    {currency} • {accounts.length} {t.accountsTab}
+                  </span>
                 </div>
               </div>
 
-              {/* Total Income */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-emerald-500/30 transition-all">
-                <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
-                  <span className="text-xs font-semibold">{t.totalIncome}</span>
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center">
-                    <TrendingUp size={16} />
-                  </div>
+              {/* Card Center: Total Balance & Visibility toggle */}
+              <div className="relative z-10 py-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-white/70 tracking-wide uppercase flex items-center gap-1.5">
+                    <Wallet size={14} className="text-indigo-400" />
+                    {t.totalBalance}
+                  </span>
+                  <button
+                    onClick={() => setHideBalance(!hideBalance)}
+                    className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+                    title="Toggle Balance Visibility"
+                  >
+                    {hideBalance ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-                <div className="text-lg sm:text-2xl font-bold tracking-tight text-emerald-500 dark:text-emerald-400">
-                  {formatMoney(totals.income)}
-                </div>
-                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 font-medium">
-                  <ArrowUpRight size={13} />
-                  <span>{totals.savingsRate}% {t.savingsRate}</span>
-                </div>
-              </div>
-
-              {/* Total Expenses */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-rose-500/30 transition-all">
-                <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
-                  <span className="text-xs font-semibold">{t.totalExpenses}</span>
-                  <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center">
-                    <TrendingDown size={16} />
-                  </div>
-                </div>
-                <div className="text-lg sm:text-2xl font-bold tracking-tight text-rose-500 dark:text-rose-400">
-                  {formatMoney(totals.expenses)}
-                </div>
-                <div className="text-[11px] text-rose-600 dark:text-rose-400 mt-1 flex items-center gap-1 font-medium">
-                  <ArrowDownRight size={13} />
-                  <span>{transactions.filter((x) => x.type === 'expense').length} records</span>
+                <div className="mt-1 text-3xl sm:text-5xl font-black tracking-tight text-white flex items-baseline gap-2">
+                  {hideBalance ? '••••••••' : formatMoney(totals.totalBalance)}
                 </div>
               </div>
 
-              {/* Net Savings */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-purple-500/30 transition-all">
-                <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
-                  <span className="text-xs font-semibold">{t.netSavings}</span>
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 flex items-center justify-center">
-                    <PiggyBank size={16} />
+              {/* Card Footer: Live Income, Live Expense & Card info */}
+              <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                      <ArrowUpRight size={12} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold text-emerald-300 uppercase leading-none">{t.totalIncome}</div>
+                      <div className="text-xs font-bold text-emerald-200 mt-0.5">{hideBalance ? '•••' : formatMoney(totals.income)}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 bg-rose-500/15 border border-rose-500/30 px-3 py-1.5 rounded-xl">
+                    <div className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                      <ArrowDownRight size={12} />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-semibold text-rose-300 uppercase leading-none">{t.totalExpenses}</div>
+                      <div className="text-xs font-bold text-rose-200 mt-0.5">{hideBalance ? '•••' : formatMoney(totals.expenses)}</div>
+                    </div>
                   </div>
                 </div>
-                <div className={`text-lg sm:text-2xl font-bold tracking-tight ${totals.netSavings >= 0 ? 'text-purple-500 dark:text-purple-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                  {formatMoney(totals.netSavings)}
-                </div>
-                <div className="text-[11px] text-[var(--text-muted)] mt-1 font-medium">
-                  {totals.netSavings >= 0 ? 'Net Positive Cashflow' : 'Negative Cashflow'}
+
+                <div className="flex items-center gap-2 text-[11px] font-mono text-white/60">
+                  <span>•••• 8829</span>
+                  <span className="text-white/30">•</span>
+                  <span>08/29</span>
                 </div>
               </div>
             </div>
@@ -1612,32 +1626,89 @@ export default function App() {
                   setEditingTx(null);
                   setTxModalOpen(true);
                 }}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-bold transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-bold transition-all shadow-sm active:scale-98"
               >
                 <Plus size={16} />
                 <span>{t.addTransaction}</span>
               </button>
               <button
                 onClick={() => setActiveTab('budgets')}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-xs font-bold transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-xs font-bold transition-all shadow-sm active:scale-98"
               >
                 <Target size={16} />
                 <span>{t.budgetsGoalsTab}</span>
               </button>
               <button
                 onClick={() => setTransferModalOpen(true)}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-xs font-bold transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 text-xs font-bold transition-all shadow-sm active:scale-98"
               >
                 <ArrowRightLeft size={16} />
                 <span>{t.transferFunds}</span>
               </button>
               <button
                 onClick={handleExportCSV}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold transition-all shadow-sm active:scale-98"
               >
                 <Download size={16} />
                 <span>{t.export}</span>
               </button>
+            </div>
+
+            {/* Performance Metrics Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {/* Net Savings */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-purple-500/30 transition-all">
+                <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
+                  <span className="text-xs font-semibold">{t.netSavings}</span>
+                  <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 dark:text-purple-400 flex items-center justify-center">
+                    <PiggyBank size={16} />
+                  </div>
+                </div>
+                <div className={`text-xl sm:text-2xl font-bold tracking-tight ${totals.netSavings >= 0 ? 'text-purple-500 dark:text-purple-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                  {hideBalance ? '••••' : formatMoney(totals.netSavings)}
+                </div>
+                <div className="text-[11px] text-[var(--text-muted)] mt-1 font-medium">
+                  {totals.netSavings >= 0 ? 'Net Positive Cashflow' : 'Negative Cashflow'}
+                </div>
+              </div>
+
+              {/* Savings Rate */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-emerald-500/30 transition-all">
+                <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
+                  <span className="text-xs font-semibold">{t.savingsRate}</span>
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center">
+                    <TrendingUp size={16} />
+                  </div>
+                </div>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight text-emerald-500 dark:text-emerald-400">
+                  {totals.savingsRate}%
+                </div>
+                <div className="w-full bg-[var(--surface-hover)] h-1.5 rounded-full overflow-hidden mt-2">
+                  <div
+                    className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(100, Math.max(0, totals.savingsRate))}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Accounts Glance */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-indigo-500/30 transition-all">
+                <div className="flex items-center justify-between text-[var(--text-muted)] mb-2">
+                  <span className="text-xs font-semibold">{t.accountsTab}</span>
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 flex items-center justify-center">
+                    <Landmark size={16} />
+                  </div>
+                </div>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+                  {accounts.length} Active
+                </div>
+                <div className="text-[11px] text-[var(--text-muted)] mt-1 flex items-center justify-between">
+                  <span>{transactions.length} total txs</span>
+                  <button onClick={() => setActiveTab('accounts')} className="text-indigo-500 hover:underline text-[11px] font-semibold">
+                    View
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Direct Monthly Auto-Save Dashboard Glance Banner */}
@@ -3597,8 +3668,8 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full sm:max-w-md bg-[var(--modal-bg)] rounded-t-3xl sm:rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl overflow-hidden animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="p-4 sm:p-5 border-b border-[var(--border)] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${type === 'income' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'}`}>
@@ -3773,8 +3844,8 @@ function BudgetLimitModal({ open, onClose, onSave, editingBudget, expenseCats, l
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">
             {editingBudget ? t.editBudgetLimit : t.addBudgetLimit}
@@ -3858,8 +3929,8 @@ function SavingsGoalModal({ open, onClose, onSave, editingGoal, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">
             {editingGoal ? t.editGoal : t.addGoal}
@@ -3956,8 +4027,8 @@ function GoalFundModal({ open, onClose, goal, actionType, onConfirm, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-xs bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-bold text-sm text-[var(--text-primary)]">
           {actionType === 'deposit' ? t.addFunds : t.withdrawFunds}: {goal.name}
         </h3>
@@ -4023,8 +4094,8 @@ function AccountModal({ open, onClose, onSave, editingAccount, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">
             {editingAccount ? t.editAccount : t.addAccount}
@@ -4137,8 +4208,8 @@ function TransferModal({ open, onClose, accounts, onTransfer, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">{t.transferFunds}</h3>
           <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
@@ -4240,8 +4311,8 @@ function RecurringModal({ open, onClose, onSave, editingRecurring, expenseCats, 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">
             {editingRecurring ? t.editRecurring : t.addRecurring}
@@ -4380,8 +4451,8 @@ function DebtModal({ open, onClose, onSave, editingDebt, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">
             {editingDebt ? t.editDebt : t.addDebt}
@@ -4512,8 +4583,8 @@ function DebtPayModal({ open, onClose, debt, onConfirm, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-xs bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-bold text-sm text-[var(--text-primary)]">
           {t.recordPayment}: {debt.person}
         </h3>
@@ -4585,8 +4656,8 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">{t.categoriesManagement}</h3>
           <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
@@ -4737,8 +4808,8 @@ function SettingsModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-base text-[var(--text-primary)]">{t.settingsTab}</h3>
           <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
@@ -4839,8 +4910,8 @@ function InstallGuideModal({ open, onClose, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-2xl border border-[var(--border)] shadow-2xl p-5 space-y-4 animate-slide-up text-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up text-center" onClick={(e) => e.stopPropagation()}>
         <div className="w-14 h-14 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-500 mx-auto flex items-center justify-center shadow-md">
           <img src={logoImg} alt="My Luy" className="w-10 h-10 object-contain rounded-xl" />
         </div>
@@ -4896,8 +4967,8 @@ function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-2xl space-y-5 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--modal-bg)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center">
@@ -5035,8 +5106,8 @@ function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, onConfir
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-2xl space-y-5 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--modal-bg)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-2.5">
             <div
@@ -5180,8 +5251,8 @@ function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, forma
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-2xl space-y-5 animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--modal-bg)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center">
