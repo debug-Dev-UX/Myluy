@@ -1,0 +1,19 @@
+{
+  "short_name": "My Luy",
+  "name": "My Luy — Personal Finance",
+  "description": "Smart Personal Finance Tracker with Analytics, Budgets, Debt & Savings Challenges.",
+  "icons": [
+    {
+      "src": "/assets/logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0d0f1a",
+  "theme_color": "#6366f1",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/"
+}
