@@ -10,7 +10,8 @@ import {
   Clock, Coins, Briefcase, Laptop, Utensils, Car, Home, Zap,
   ShoppingBag, HeartPulse, Smartphone, Dumbbell, Plane, Film,
   GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift,
-  CircleStop, Play, CalendarClock, Infinity as InfinityIcon
+  CircleStop, Play, CalendarClock, Infinity as InfinityIcon,
+  ArrowDownLeft, History, Minus
 } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
@@ -141,6 +142,22 @@ const dict = {
     autoSavePerpetual: 'Perpetual / No Stop',
     totalSavedSoFar: 'Stored in secure vault',
     directVault: 'Direct Vault',
+    withdraw: 'Withdraw',
+    deposit: 'Deposit',
+    withdrawFromVault: 'Withdraw from Stash Vault',
+    depositToVault: 'Deposit to Stash Vault',
+    autoSaveHistory: 'Auto-Save Vault History',
+    noAutoSaveHistory: 'No deposit or withdrawal history yet',
+    noAutoSaveHistorySub: 'Deposits and withdrawals for this monthly stash will appear here',
+    editHistoryItem: 'Edit Vault Record',
+    deleteHistoryItem: 'Delete Record',
+    confirmDeleteHistory: 'Are you sure you want to delete this vault record? Vault and account balances will be updated.',
+    withdrawSuccess: 'Funds successfully withdrawn from vault!',
+    recordUpdated: 'Vault history record updated successfully!',
+    recordDeleted: 'Vault history record deleted successfully!',
+    insufficientVaultFunds: 'Cannot withdraw more than current vault balance!',
+    note: 'Note',
+    notePlaceholder: 'e.g. Monthly allocation or Emergency withdrawal',
 
     // Accounts & Currencies
     accountsList: 'Your Accounts & Wallets',
@@ -378,6 +395,22 @@ const dict = {
     autoSavePerpetual: 'រហូត / គ្មានពេលកំណត់',
     totalSavedSoFar: 'រក្សាទុកក្នុងទូរសន្សំ',
     directVault: 'ទូរសន្សំផ្ទាល់',
+    withdraw: 'ដកប្រាក់',
+    deposit: 'ដាក់ប្រាក់',
+    withdrawFromVault: 'ដកប្រាក់ពីទូរសន្សំ',
+    depositToVault: 'ដាក់ប្រាក់ចូលទូរសន្សំ',
+    autoSaveHistory: 'ប្រវត្តិដាក់ និងដកប្រាក់សន្សំ',
+    noAutoSaveHistory: 'មិនទាន់មានប្រវត្តិដាក់ ឬដកប្រាក់នៅឡើយទេ',
+    noAutoSaveHistorySub: 'រាល់ការដាក់ និងដកប្រាក់សម្រាប់គម្រោងសន្សំនេះនឹងបង្ហាញនៅទីនេះ',
+    editHistoryItem: 'កែប្រែកំណត់ត្រាសន្សំ',
+    deleteHistoryItem: 'លុបកំណត់ត្រា',
+    confirmDeleteHistory: 'តើអ្នកប្រាកដជាចង់លុបកំណត់ត្រានេះមែនទេ? សមតុល្យសន្សំនឹងត្រូវកែសម្រួលឡើងវិញ។',
+    withdrawSuccess: 'បានដកប្រាក់ពីទូរសន្សំដោយជោគជ័យ!',
+    recordUpdated: 'បានកែប្រែកំណត់ត្រាដោយជោគជ័យ!',
+    recordDeleted: 'បានលុបកំណត់ត្រាដោយជោគជ័យ!',
+    insufficientVaultFunds: 'មិនអាចដកប្រាក់លើសពីសមតុល្យក្នុងទូរសន្សំបានទេ!',
+    note: 'ចំណាំ',
+    notePlaceholder: 'ឧ. សន្សំប្រចាំខែ ឬ ដកប្រាក់បន្ទាន់',
 
     // Accounts & Currencies
     accountsList: 'គណនី និងកាបូបលុយរបស់អ្នក',
@@ -655,6 +688,9 @@ export default function App() {
   const [editingGoal, setEditingGoal] = useState(null);
 
   const [autoSaveModalOpen, setAutoSaveModalOpen] = useState(false);
+  const [autoSaveActionModalOpen, setAutoSaveActionModalOpen] = useState(false);
+  const [autoSaveActionType, setAutoSaveActionType] = useState('withdraw'); // 'deposit' | 'withdraw'
+  const [editingAutoSaveHistory, setEditingAutoSaveHistory] = useState(null);
 
   const [goalFundModalOpen, setGoalFundModalOpen] = useState(false);
   const [selectedGoalForFund, setSelectedGoalForFund] = useState(null);
@@ -1019,12 +1055,210 @@ export default function App() {
       accumulated: (Number(prev.accumulated) || 0) + amt,
       lastExecutedMonth: currentYearMonth,
       history: [
-        { id: 'ash_' + Date.now(), date: nowStr, amount: amt, accountName: accName },
+        {
+          id: 'ash_' + Date.now(),
+          txId: newTx.id,
+          type: 'deposit',
+          amount: amt,
+          accountId: targetAccId,
+          accountName: accName,
+          date: nowStr,
+          note: `Monthly Stash Deposit (${formatMoney(amt)})`,
+        },
         ...(prev.history || []),
       ],
     }));
 
     showToast(t.depositSuccess, 'success');
+  };
+
+  // Direct Monthly Auto-Save Fund Action (Deposit / Withdraw)
+  const handleAutoSaveFundAction = ({ actionType, amount, accountId, date, note }) => {
+    const amt = parseFloat(amount) || 0;
+    if (amt <= 0) return;
+    const dateStr = date || new Date().toISOString().split('T')[0];
+    const accName = accounts.find((a) => a.id === accountId)?.name || t.directVault;
+
+    if (actionType === 'withdraw') {
+      if (amt > (Number(autoSavePlan.accumulated) || 0)) {
+        showToast(t.insufficientVaultFunds, 'error');
+        return;
+      }
+
+      const txId = 'tx_as_w_' + Date.now();
+      const newTx = {
+        id: txId,
+        desc: note || `Vault Withdraw: ${autoSavePlan.title || 'Monthly Stash'}`,
+        amount: amt,
+        type: 'income',
+        category: 'savings',
+        accountId: accountId,
+        date: dateStr,
+      };
+      setTransactions((prev) => [newTx, ...prev]);
+
+      if (accountId) {
+        setAccounts((prev) =>
+          prev.map((a) => (a.id === accountId ? { ...a, balance: (Number(a.balance) || 0) + amt } : a))
+        );
+      }
+
+      setAutoSavePlan((prev) => ({
+        ...prev,
+        accumulated: Math.max(0, (Number(prev.accumulated) || 0) - amt),
+        history: [
+          {
+            id: 'ash_' + Date.now(),
+            txId,
+            type: 'withdraw',
+            amount: amt,
+            accountId,
+            accountName: accName,
+            date: dateStr,
+            note: note || t.withdrawFromVault,
+          },
+          ...(prev.history || []),
+        ],
+      }));
+
+      setAutoSaveActionModalOpen(false);
+      showToast(t.withdrawSuccess, 'success');
+    } else {
+      const txId = 'tx_as_d_' + Date.now();
+      const newTx = {
+        id: txId,
+        desc: note || `Vault Deposit: ${autoSavePlan.title || 'Monthly Stash'}`,
+        amount: amt,
+        type: 'expense',
+        category: 'savings',
+        accountId: accountId,
+        date: dateStr,
+      };
+      setTransactions((prev) => [newTx, ...prev]);
+
+      if (accountId) {
+        setAccounts((prev) =>
+          prev.map((a) => (a.id === accountId ? { ...a, balance: Math.max(0, (Number(a.balance) || 0) - amt) } : a))
+        );
+      }
+
+      setAutoSavePlan((prev) => ({
+        ...prev,
+        accumulated: (Number(prev.accumulated) || 0) + amt,
+        history: [
+          {
+            id: 'ash_' + Date.now(),
+            txId,
+            type: 'deposit',
+            amount: amt,
+            accountId,
+            accountName: accName,
+            date: dateStr,
+            note: note || t.depositToVault,
+          },
+          ...(prev.history || []),
+        ],
+      }));
+
+      setAutoSaveActionModalOpen(false);
+      showToast(t.depositSuccess, 'success');
+    }
+  };
+
+  // Edit an existing history item
+  const handleEditAutoSaveHistory = (updatedItem) => {
+    const oldItem = (autoSavePlan.history || []).find((h) => h.id === updatedItem.id);
+    if (!oldItem) return;
+
+    const oldAmt = parseFloat(oldItem.amount) || 0;
+    const newAmt = parseFloat(updatedItem.amount) || 0;
+    const newAccName = accounts.find((a) => a.id === updatedItem.accountId)?.name || t.directVault;
+
+    const oldVaultEffect = oldItem.type === 'deposit' ? oldAmt : -oldAmt;
+    const newVaultEffect = updatedItem.type === 'deposit' ? newAmt : -newAmt;
+    const vaultDelta = newVaultEffect - oldVaultEffect;
+
+    setAccounts((prev) =>
+      prev.map((a) => {
+        let bal = Number(a.balance) || 0;
+        if (a.id === oldItem.accountId) {
+          bal += oldItem.type === 'deposit' ? oldAmt : -oldAmt;
+        }
+        if (a.id === updatedItem.accountId) {
+          bal += updatedItem.type === 'deposit' ? -newAmt : newAmt;
+        }
+        return { ...a, balance: Math.max(0, bal) };
+      })
+    );
+
+    if (oldItem.txId) {
+      setTransactions((prev) =>
+        prev.map((tx) =>
+          tx.id === oldItem.txId
+            ? {
+                ...tx,
+                amount: newAmt,
+                date: updatedItem.date,
+                accountId: updatedItem.accountId,
+                type: updatedItem.type === 'deposit' ? 'expense' : 'income',
+                desc: updatedItem.note || tx.desc,
+              }
+            : tx
+        )
+      );
+    }
+
+    setAutoSavePlan((prev) => ({
+      ...prev,
+      accumulated: Math.max(0, (Number(prev.accumulated) || 0) + vaultDelta),
+      history: (prev.history || []).map((h) =>
+        h.id === updatedItem.id
+          ? {
+              ...updatedItem,
+              amount: newAmt,
+              accountName: newAccName,
+            }
+          : h
+      ),
+    }));
+
+    setEditingAutoSaveHistory(null);
+    showToast(t.recordUpdated, 'success');
+  };
+
+  // Delete a history item
+  const handleDeleteAutoSaveHistory = (id) => {
+    if (!window.confirm(t.confirmDeleteHistory)) return;
+
+    const item = (autoSavePlan.history || []).find((h) => h.id === id);
+    if (!item) return;
+
+    const amt = parseFloat(item.amount) || 0;
+
+    if (item.accountId) {
+      setAccounts((prev) =>
+        prev.map((a) => {
+          if (a.id === item.accountId) {
+            const diff = item.type === 'deposit' ? amt : -amt;
+            return { ...a, balance: Math.max(0, (Number(a.balance) || 0) + diff) };
+          }
+          return a;
+        })
+      );
+    }
+
+    const vaultDiff = item.type === 'deposit' ? -amt : amt;
+    setAutoSavePlan((prev) => ({
+      ...prev,
+      accumulated: Math.max(0, (Number(prev.accumulated) || 0) + vaultDiff),
+      history: (prev.history || []).filter((h) => h.id !== id),
+    }));
+
+    if (item.txId) {
+      setTransactions((prev) => prev.filter((tx) => tx.id !== item.txId));
+    }
+
+    showToast(t.recordDeleted, 'success');
   };
 
   const handleSaveAutoSavePlan = (updatedPlan) => {
@@ -2020,7 +2254,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ACTION ROW: SINGLE BUTTON FOR STOP / RESUME */}
+              {/* ACTION ROW: SINGLE BUTTON FOR STOP / RESUME + DEPOSIT & WITHDRAW */}
               <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
                 <button
                   onClick={handleToggleAutoSave}
@@ -2043,13 +2277,129 @@ export default function App() {
                   )}
                 </button>
 
-                <button
-                  onClick={handleTriggerAutoSaveDeposit}
-                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-bold text-[var(--text-primary)] inline-flex items-center justify-center gap-2 transition-all shadow-sm"
-                >
-                  <Plus size={15} className="text-teal-500" />
-                  <span>{t.depositNow} ({formatMoney(autoSavePlan.amount)})</span>
-                </button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button
+                    onClick={() => {
+                      setAutoSaveActionType('deposit');
+                      setAutoSaveActionModalOpen(true);
+                    }}
+                    className="flex-1 sm:flex-initial px-4 py-3 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-600 dark:text-teal-400 border border-teal-500/30 text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  >
+                    <Plus size={15} />
+                    <span>{t.deposit}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setAutoSaveActionType('withdraw');
+                      setAutoSaveActionModalOpen(true);
+                    }}
+                    className="flex-1 sm:flex-initial px-4 py-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold inline-flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  >
+                    <ArrowUpRight size={15} />
+                    <span>{t.withdraw}</span>
+                  </button>
+
+                  <button
+                    onClick={handleTriggerAutoSaveDeposit}
+                    className="hidden lg:inline-flex px-3.5 py-3 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] items-center justify-center gap-1.5 transition-all shadow-sm"
+                    title={t.depositNow}
+                  >
+                    <span>{t.depositNow}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* VAULT HISTORY (DEPOSITS & WITHDRAWALS) WITH EDIT AND DELETE */}
+              <div className="pt-4 border-t border-[var(--border)] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <History size={16} className="text-teal-600 dark:text-teal-400" />
+                    <h4 className="font-bold text-xs sm:text-sm text-[var(--text-primary)]">{t.autoSaveHistory}</h4>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--input-bg)] text-[var(--text-muted)] border border-[var(--border)]">
+                      {(autoSavePlan.history || []).length}
+                    </span>
+                  </div>
+                </div>
+
+                {(!autoSavePlan.history || autoSavePlan.history.length === 0) ? (
+                  <div className="p-6 rounded-xl border border-dashed border-[var(--border)] text-center text-xs text-[var(--text-muted)] space-y-1">
+                    <p className="font-medium text-[var(--text-secondary)]">{t.noAutoSaveHistory}</p>
+                    <p className="text-[11px] text-[var(--text-muted)]">{t.noAutoSaveHistorySub}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                    {autoSavePlan.history.map((item) => {
+                      const isWithdraw = item.type === 'withdraw';
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] flex items-center justify-between gap-3 shadow-sm hover:border-teal-500/30 transition-all"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div
+                              className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                isWithdraw
+                                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25'
+                                  : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+                              }`}
+                            >
+                              {isWithdraw ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
+                            </div>
+
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span
+                                  className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                                    isWithdraw
+                                      ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                      : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                  }`}
+                                >
+                                  {isWithdraw ? t.withdraw : t.deposit}
+                                </span>
+                                <span className="text-xs font-bold text-[var(--text-primary)] truncate">
+                                  {item.note || (isWithdraw ? t.withdrawFromVault : t.depositToVault)}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                                {item.date} • {item.accountName || accounts.find((a) => a.id === item.accountId)?.name || t.directVault}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span
+                              className={`text-xs sm:text-sm font-extrabold ${
+                                isWithdraw ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                              }`}
+                            >
+                              {isWithdraw ? '-' : '+'}{formatMoney(item.amount)}
+                            </span>
+
+                            {/* Edit & Delete Action Buttons */}
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setEditingAutoSaveHistory(item)}
+                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-teal-600 dark:hover:text-teal-400 hover:bg-[var(--surface-hover)] transition-all"
+                                title={t.editHistoryItem}
+                              >
+                                <Pencil size={13} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteAutoSaveHistory(item.id)}
+                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-[var(--surface-hover)] transition-all"
+                                title={t.deleteHistoryItem}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -3166,6 +3516,37 @@ export default function App() {
           plan={autoSavePlan}
           onSave={handleSaveAutoSavePlan}
           accounts={accounts}
+          t={t}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL 14: DIRECT AUTO-SAVE FUND ACTION (DEPOSIT / WITHDRAW)
+          ═══════════════════════════════════════════════════════════════ */}
+      {autoSaveActionModalOpen && (
+        <AutoSaveFundModal
+          open={autoSaveActionModalOpen}
+          onClose={() => setAutoSaveActionModalOpen(false)}
+          actionType={autoSaveActionType}
+          plan={autoSavePlan}
+          accounts={accounts}
+          onConfirm={handleAutoSaveFundAction}
+          formatMoney={formatMoney}
+          t={t}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL 15: EDIT AUTO-SAVE HISTORY RECORD
+          ═══════════════════════════════════════════════════════════════ */}
+      {editingAutoSaveHistory && (
+        <AutoSaveHistoryEditModal
+          open={!!editingAutoSaveHistory}
+          onClose={() => setEditingAutoSaveHistory(null)}
+          item={editingAutoSaveHistory}
+          accounts={accounts}
+          onSave={handleEditAutoSaveHistory}
+          formatMoney={formatMoney}
           t={t}
         />
       )}
@@ -4623,4 +5004,304 @@ function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SUB-COMPONENT: DIRECT AUTO-SAVE FUND ACTION (DEPOSIT / WITHDRAW)
+   ═══════════════════════════════════════════════════════════════ */
+function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, onConfirm, formatMoney, t }) {
+  const isWithdraw = actionType === 'withdraw';
+  const [amount, setAmount] = useState(
+    isWithdraw
+      ? (plan.accumulated > 0 ? Math.min(plan.accumulated, plan.amount || 50) : '')
+      : (plan.amount || 50)
+  );
+  const [accountId, setAccountId] = useState(plan.accountId || accounts[0]?.id || '');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [note, setNote] = useState('');
+
+  if (!open) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const val = parseFloat(amount) || 0;
+    if (val <= 0) return;
+    onConfirm({
+      actionType,
+      amount: val,
+      accountId,
+      date,
+      note: note.trim(),
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-2xl space-y-5 animate-slide-up">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                isWithdraw
+                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25'
+                  : 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/25'
+              }`}
+            >
+              {isWithdraw ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-[var(--text-primary)]">
+                {isWithdraw ? t.withdrawFromVault : t.depositToVault}
+              </h3>
+              <p className="text-[11px] text-[var(--text-muted)]">
+                {t.totalAccumulated}: <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(plan.accumulated || 0)}</span>
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
+              {isWithdraw ? t.withdrawAmount : t.depositAmount} ($)
+            </label>
+            <input
+              type="number"
+              step="any"
+              min="0.01"
+              max={isWithdraw ? (plan.accumulated || 0) : undefined}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+            />
+            {isWithdraw && (
+              <p className="text-[11px] text-[var(--text-muted)] mt-1">
+                Max available: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatMoney(plan.accumulated || 0)}</span>
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
+                {isWithdraw ? t.transferTo : t.transferFrom}
+              </label>
+              <select
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              >
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.date}</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.note}</label>
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={t.notePlaceholder}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+            >
+              {t.cancel}
+            </button>
+            <button
+              type="submit"
+              className={`px-5 py-2 rounded-xl text-xs font-bold text-white shadow-md ${
+                isWithdraw
+                  ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20'
+                  : 'bg-teal-600 hover:bg-teal-500 shadow-teal-600/20'
+              }`}
+            >
+              {isWithdraw ? t.withdraw : t.deposit}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SUB-COMPONENT: EDIT AUTO-SAVE HISTORY RECORD MODAL
+   ═══════════════════════════════════════════════════════════════ */
+function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, formatMoney, t }) {
+  const [type, setType] = useState(item?.type || 'deposit');
+  const [amount, setAmount] = useState(item?.amount || 0);
+  const [accountId, setAccountId] = useState(item?.accountId || accounts[0]?.id || '');
+  const [date, setDate] = useState(item?.date || new Date().toISOString().split('T')[0]);
+  const [note, setNote] = useState(item?.note || '');
+
+  if (!open || !item) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const val = parseFloat(amount) || 0;
+    if (val <= 0) return;
+    onSave({
+      ...item,
+      type,
+      amount: val,
+      accountId,
+      date,
+      note: note.trim(),
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-2xl space-y-5 animate-slide-up">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center">
+              <Pencil size={18} />
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-[var(--text-primary)]">{t.editHistoryItem}</h3>
+              <p className="text-[11px] text-[var(--text-muted)]">{item.date} • {item.accountName}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.type}</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setType('deposit')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
+                  type === 'deposit'
+                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                    : 'bg-[var(--input-bg)] border-[var(--border)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <ArrowDownLeft size={14} />
+                <span>{t.deposit}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setType('withdraw')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
+                  type === 'withdraw'
+                    ? 'bg-amber-500/15 border-amber-500 text-amber-600 dark:text-amber-400 shadow-sm'
+                    : 'bg-[var(--input-bg)] border-[var(--border)] text-[var(--text-secondary)]'
+                }`}
+              >
+                <ArrowUpRight size={14} />
+                <span>{t.withdraw}</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.amount} ($)</label>
+            <input
+              type="number"
+              step="any"
+              min="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.account}</label>
+              <select
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              >
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.date}</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.note}</label>
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder={t.notePlaceholder}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+            >
+              {t.cancel}
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-md shadow-teal-600/20"
+            >
+              {t.save}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 
