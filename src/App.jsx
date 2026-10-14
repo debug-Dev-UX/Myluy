@@ -1712,7 +1712,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-200 select-none`}>
+    <div className={`min-h-screen w-full max-w-full overflow-x-hidden bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-200 select-none`}>
       {/* ═══════════════════════════════════════════════════════════════
           PREMIUM FINTECH APP BOOT LOADER & SPLASH SCREEN
           ═══════════════════════════════════════════════════════════════ */}
@@ -1848,18 +1848,18 @@ export default function App() {
           })}
         </nav>
 
-        {/* Controls: Responsive and Clean */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-          {/* Quick Refresh & Sync with Loading Feedback */}
+        {/* Controls: Responsive, uncluttered and perfectly sized for mobile */}
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Quick Refresh & Sync with Loading Feedback (Desktop/Tablet only) */}
           <button
             onClick={handleRefreshApp}
             title={t.refreshData}
-            className="p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm transition-all"
+            className="hidden sm:flex p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm transition-all"
           >
             <RefreshCw size={16} className={isSyncing ? 'animate-spin text-indigo-500' : ''} />
           </button>
 
-          {/* Quick Currency Toggle Pill */}
+          {/* Quick Currency Toggle Pill (Desktop/Tablet only) */}
           <button
             onClick={() => {
               const next = currency === 'USD' ? 'KHR' : 'USD';
@@ -1867,25 +1867,25 @@ export default function App() {
               showToast(`${t.currencyToggle}: ${next === 'USD' ? '$ USD' : '៛ KHR'}`, 'success');
             }}
             title={t.currencyToggle}
-            className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-indigo-500 dark:text-indigo-400 shadow-sm transition-all"
+            className="hidden sm:flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-indigo-500 dark:text-indigo-400 shadow-sm transition-all"
           >
             <Coins size={14} />
             <span className="font-bold">{currency}</span>
           </button>
 
-          {/* Real-time Exchange Converter Quick Button */}
+          {/* Real-time Exchange Converter Quick Button (Mobile-optimized compact) */}
           <button
             onClick={() => setExchangeModalOpen(true)}
             title={t.currencyExchange || 'Real-time KHR - USD Exchange (khr-usd-exchange-one.vercel.app)'}
-            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all active:scale-95"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all active:scale-95"
           >
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2 flex-shrink-0">
               <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isRateFetching ? 'bg-amber-400' : 'bg-emerald-400'} opacity-75`}></span>
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${isRateFetching ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+              <span className={`relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 ${isRateFetching ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
             </span>
-            <ArrowRightLeft size={13} className={`text-indigo-500 ${isRateFetching ? 'animate-spin' : ''}`} />
-            <span className="hidden xs:inline text-[11px] font-medium text-slate-500 dark:text-slate-400">1$ ≈</span>
-            <span>{exchangeRate.toLocaleString()} ៛</span>
+            <ArrowRightLeft size={12} className={`text-indigo-500 flex-shrink-0 ${isRateFetching ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline text-[11px] font-medium text-slate-500 dark:text-slate-400">1$ ≈</span>
+            <span className="font-bold whitespace-nowrap">{exchangeRate.toLocaleString()} ៛</span>
           </button>
 
           {/* Language Toggle (Desktop view) */}
@@ -1902,12 +1902,12 @@ export default function App() {
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             title={theme === 'dark' ? t.lightMode : t.darkMode}
-            className="p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm transition-all"
+            className="p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm transition-all flex-shrink-0"
           >
             {theme === 'dark' ? (
-              <Sun size={16} className="text-amber-400" />
+              <Sun size={15} className="text-amber-400" />
             ) : (
-              <Moon size={16} className="text-indigo-600" />
+              <Moon size={15} className="text-indigo-600" />
             )}
           </button>
 
@@ -1926,7 +1926,7 @@ export default function App() {
             <button
               onClick={() => setAuthModalOpen(true)}
               title={`Cloud Synced: ${currentUser.email || currentUser.displayName || 'Account'} (${cloudSyncStatus})`}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 shadow-sm transition-all active:scale-95"
+              className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 shadow-sm transition-all active:scale-95 flex-shrink-0"
             >
               {currentUser.photoURL ? (
                 <img
@@ -1939,7 +1939,7 @@ export default function App() {
                   {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
                 </div>
               )}
-              <Cloud size={13} className={cloudSyncStatus === 'syncing' ? 'animate-pulse text-amber-500' : 'text-emerald-500'} />
+              <Cloud size={12} className={cloudSyncStatus === 'syncing' ? 'animate-pulse text-amber-500' : 'text-emerald-500'} />
               <span className="hidden xl:inline max-w-[85px] truncate text-[11px]">
                 {currentUser.displayName?.split(' ')[0] || currentUser.email?.split('@')[0]}
               </span>
@@ -1948,18 +1948,18 @@ export default function App() {
             <button
               onClick={() => setAuthModalOpen(true)}
               title="Sign In to Sync across Phone, Laptop, and Tablet"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm shadow-indigo-600/25 transition-all active:scale-95"
+              className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm shadow-indigo-600/25 transition-all active:scale-95 flex-shrink-0"
             >
-              <Cloud size={14} />
-              <span className="hidden sm:inline">Sync Cloud</span>
+              <Cloud size={13} />
+              <span className="hidden sm:inline">Sync</span>
             </button>
           )}
 
-          {/* Settings Button */}
+          {/* Settings Button (Desktop/Tablet only - mobile has it in drawer) */}
           <button
             onClick={() => setSettingsModalOpen(true)}
             title={t.settingsTab}
-            className="p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm transition-all"
+            className="hidden sm:flex p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm transition-all flex-shrink-0"
           >
             <Settings size={16} />
           </button>
@@ -1967,7 +1967,7 @@ export default function App() {
           {/* Mobile Menu Drawer Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm"
+            className="lg:hidden p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm flex-shrink-0"
           >
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -2057,7 +2057,42 @@ export default function App() {
               })}
             </div>
 
-            <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-white/5 text-xs">
+            {/* Mobile Quick Action Buttons: Currency, Settings, Refresh */}
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
+              <button
+                onClick={() => {
+                  const next = currency === 'USD' ? 'KHR' : 'USD';
+                  setCurrency(next);
+                  showToast(`${t.currencyToggle}: ${next === 'USD' ? '$ USD' : '៛ KHR'}`, 'success');
+                }}
+                className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-bold text-slate-800 dark:text-slate-200"
+              >
+                <Coins size={14} className="text-indigo-500" />
+                <span>{currency}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setSettingsModalOpen(true);
+                }}
+                className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-bold text-slate-800 dark:text-slate-200"
+              >
+                <Settings size={14} className="text-slate-500 dark:text-slate-400" />
+                <span>{t.settingsTab}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleRefreshApp();
+                }}
+                className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-bold text-slate-800 dark:text-slate-200"
+              >
+                <RefreshCw size={14} className={isSyncing ? 'animate-spin text-indigo-500' : 'text-slate-500 dark:text-slate-400'} />
+                <span>{t.refreshData || 'Refresh'}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-white/5 text-xs">
               <button
                 onClick={() => {
                   setLang(lang === 'en' ? 'kh' : 'en');
@@ -2086,7 +2121,7 @@ export default function App() {
       {/* ═══════════════════════════════════════════════════════════════
           MAIN CONTENT CONTAINER
           ═══════════════════════════════════════════════════════════════ */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3.5 sm:p-6 lg:p-8 pb-28 lg:pb-12 space-y-6">
+      <main className="flex-1 max-w-7xl w-full min-w-0 mx-auto px-3.5 py-4 sm:p-6 lg:p-8 pb-28 lg:pb-12 space-y-5 sm:space-y-6 overflow-x-hidden sm:overflow-visible">
         {/* Streak & Level Hero Banner (Clean in both light and dark modes) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-50/80 via-purple-50/70 to-pink-50/80 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-slate-900/50 border border-indigo-200/80 dark:border-indigo-500/20 shadow-sm backdrop-blur-md">
           <div className="flex items-center gap-3">
@@ -2136,16 +2171,16 @@ export default function App() {
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             {/* ─── NEO-FINTECH VIRTUAL SMART CARD HERO ─── */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-6 sm:p-7 text-white shadow-2xl border border-indigo-500/30">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-4 sm:p-7 text-white shadow-2xl border border-indigo-500/30 w-full min-w-0">
               {/* Background ambient lighting */}
               <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-indigo-500/25 blur-3xl pointer-events-none" />
               <div className="absolute -left-12 -bottom-12 w-64 h-64 rounded-full bg-purple-500/20 blur-3xl pointer-events-none" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent pointer-events-none" />
 
               {/* Card Header: Chip, Contactless, Platinum branding & currency badge */}
-              <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-7 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-[1.5px] shadow-sm flex items-center justify-center">
+              <div className="relative z-10 flex items-center justify-between pb-3.5 border-b border-white/10 gap-2">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="w-9 h-6 sm:w-10 sm:h-7 rounded-md bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-[1.5px] shadow-sm flex items-center justify-center flex-shrink-0">
                     <div className="w-full h-full bg-amber-400/30 rounded-[4px] border border-amber-900/40 grid grid-cols-2 gap-0.5 p-0.5">
                       <div className="border-r border-b border-amber-900/40"></div>
                       <div className="border-b border-amber-900/40"></div>
@@ -2153,20 +2188,20 @@ export default function App() {
                       <div></div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/80">
-                    <Radio size={14} className="rotate-90 text-indigo-300" />
-                    <span className="text-[11px] font-mono tracking-widest uppercase font-semibold text-indigo-200/90">MY LUY PLATINUM</span>
+                  <div className="flex items-center gap-1.5 text-white/80 min-w-0">
+                    <Radio size={13} className="rotate-90 text-indigo-300 flex-shrink-0" />
+                    <span className="text-[10px] sm:text-[11px] font-mono tracking-wider sm:tracking-widest uppercase font-semibold text-indigo-200/90 truncate">MY LUY PLATINUM</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-1 rounded-full bg-white/10 text-white/90 text-[10px] font-bold tracking-wide uppercase border border-white/10 backdrop-blur-md">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-white/10 text-white/90 text-[10px] font-bold tracking-wide uppercase border border-white/10 backdrop-blur-md truncate max-w-[130px] sm:max-w-none">
                     {currency} • {accounts.length} {t.accountsTab}
                   </span>
                 </div>
               </div>
 
               {/* Card Center: Total Balance & Visibility toggle */}
-              <div className="relative z-10 py-5">
+              <div className="relative z-10 py-4 sm:py-5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-white/70 tracking-wide uppercase flex items-center gap-1.5">
                     <Wallet size={14} className="text-indigo-400" />
@@ -2180,7 +2215,7 @@ export default function App() {
                     {hideBalance ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                <div className="mt-1 text-3xl sm:text-5xl font-black tracking-tight text-white flex items-baseline gap-2">
+                <div className="mt-1 text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white flex items-baseline gap-2 truncate">
                   {hideBalance ? '••••••••' : formatMoney(totals.totalBalance)}
                 </div>
               </div>
@@ -4301,7 +4336,13 @@ export default function App() {
       {/* ═══════════════════════════════════════════════════════════════
           MOBILE BOTTOM NAVIGATION (APP-LIKE EXPERIENCE)
           ═══════════════════════════════════════════════════════════════ */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-[var(--nav-bg)] backdrop-blur-xl border-t border-[var(--border)] h-16 px-2 flex items-center justify-around z-40">
+      <nav
+        className="lg:hidden fixed bottom-0 inset-x-0 bg-[var(--nav-bg)] backdrop-blur-xl border-t border-[var(--border)] px-1 sm:px-2 flex items-center justify-around z-40 transition-all"
+        style={{
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          height: 'calc(60px + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
         {[
           { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
           { id: 'analytics', label: t.analyticsTab, icon: BarChart3 },
@@ -4315,12 +4356,12 @@ export default function App() {
             <button
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className={`flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all ${
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1 px-0.5 transition-all min-w-0 ${
                 active ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
             >
-              <Icon size={19} className={active ? 'stroke-[2.5]' : 'stroke-[1.8]'} />
-              <span className="text-[10px] tracking-tight">{item.label}</span>
+              <Icon size={18} className={active ? 'stroke-[2.5]' : 'stroke-[1.8]'} />
+              <span className="text-[10px] tracking-tight truncate max-w-full text-center leading-tight">{item.label}</span>
             </button>
           );
         })}
