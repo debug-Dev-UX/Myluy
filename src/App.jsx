@@ -930,7 +930,7 @@ export default function App() {
   // ═══════════════════════════════════════════════════════════════
   const handlePushToCloud = useCallback(async (targetUid, notify = false) => {
     const uid = targetUid || currentUser?.uid;
-    if (!uid) return;
+    if (!uid || !db) return;
     try {
       setCloudSyncStatus('syncing');
       await setDoc(
@@ -987,6 +987,7 @@ export default function App() {
 
   // Auth Listener and Remote Firestore Real-Time Subscription
   useEffect(() => {
+    if (!auth || !db) return;
     let unsubscribeSnapshot = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
