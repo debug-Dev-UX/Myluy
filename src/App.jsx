@@ -3,7 +3,7 @@ import {
   Wallet, TrendingUp, TrendingDown, Target, Plus, Sun, Moon, Globe,
   ArrowUpRight, ArrowDownRight, CreditCard, DollarSign, Menu, X,
   Pencil, Trash2, Check, Filter, ArrowUpDown, Download, Search,
-  PiggyBank, Tag, LayoutDashboard, List, Settings, ChevronDown,
+  PiggyBank, Tag, LayoutDashboard, List, Settings, ChevronDown, ChevronUp,
   Calendar, Crosshair, Trophy, Flame, Send, ExternalLink,
   BarChart3, PieChart, Landmark, RefreshCw, HandCoins, ShieldCheck,
   Award, Sparkles, AlertTriangle, AlertCircle, CheckCircle2, ChevronRight,
@@ -75,6 +75,18 @@ const dict = {
     deleteConfirmMsg: 'This action cannot be undone.',
     emptyTransactions: 'No transactions recorded yet',
     emptyTransactionsSub: 'Tap the + button to record your first transaction',
+
+    // Progressive Disclosure
+    progressiveDisclosure: 'Progressive Disclosure',
+    viewDetails: 'View Details',
+    hideDetails: 'Hide Details',
+    showMore: 'Show More',
+    showLess: 'Show Less',
+    refId: 'Ref ID',
+    convertedEst: 'Converted Est.',
+    channel: 'Account Source',
+    fullSchedule: 'Schedule Rule',
+    debtProgress: 'Repayment Progress',
 
     // Analytics & Charts
     cashFlowTrend: 'Cash Flow Trends',
@@ -328,6 +340,18 @@ const dict = {
     deleteConfirmMsg: 'សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។',
     emptyTransactions: 'មិនទាន់មានប្រតិបត្តិការនៅឡើយទេ',
     emptyTransactionsSub: 'ចុចប៊ូតុង + ដើម្បីកត់ត្រាប្រតិបត្តិការដំបូង',
+
+    // Progressive Disclosure
+    progressiveDisclosure: 'ព័ត៌មានលម្អិតលាតត្រដាង',
+    viewDetails: 'មើលលម្អិត',
+    hideDetails: 'លាក់លម្អិត',
+    showMore: 'បង្ហាញបន្ថែម',
+    showLess: 'បង្ហាញតិច',
+    refId: 'លេខសម្គាល់',
+    convertedEst: 'តម្លៃប្តូរប្រាក់ប៉ាន់ស្មាន',
+    channel: 'ប្រភពគណនី',
+    fullSchedule: 'កាលវិភាគកំណត់',
+    debtProgress: 'វឌ្ឍនភាពសងប្រាក់',
 
     // Analytics & Charts
     cashFlowTrend: 'និន្នាការចរន្តសាច់ប្រាក់',
@@ -677,6 +701,16 @@ export default function App() {
   const [txSearchQuery, setTxSearchQuery] = useState('');
   const [txSortOption, setTxSortOption] = useState('newest');
   const [hideBalance, setHideBalance] = useState(() => loadLS('myluy_hide_bal', false));
+
+  // Progressive Disclosure states for all tables & lists
+  const [expandedTxId, setExpandedTxId] = useState(null);
+  const [txVisibleCount, setTxVisibleCount] = useState(10);
+  const [expandedAutoSaveId, setExpandedAutoSaveId] = useState(null);
+  const [expandedRecurringId, setExpandedRecurringId] = useState(null);
+  const [expandedDebtId, setExpandedDebtId] = useState(null);
+  const [expandedAccountId, setExpandedAccountId] = useState(null);
+  const [expandedBudgetId, setExpandedBudgetId] = useState(null);
+  const [expandedGoalId, setExpandedGoalId] = useState(null);
 
   // Modals
   const [txModalOpen, setTxModalOpen] = useState(false);
@@ -1881,80 +1915,190 @@ export default function App() {
                   </button>
                 </div>
               ) : (
-                <div className="divide-y divide-[var(--border)]">
-                  {filteredTransactions.map((tx) => {
-                    const catInfo = getCategoryDetails(tx.category);
-                    const isInc = tx.type === 'income';
-                    const accountObj = accounts.find((a) => a.id === tx.accountId);
+                <>
+                  <div className="divide-y divide-[var(--border)]">
+                    {filteredTransactions.slice(0, txVisibleCount).map((tx) => {
+                      const catInfo = getCategoryDetails(tx.category);
+                      const isInc = tx.type === 'income';
+                      const accountObj = accounts.find((a) => a.id === tx.accountId);
+                      const isExpanded = expandedTxId === tx.id;
+                      const altCurrency = currency === 'USD' ? 'KHR' : 'USD';
+                      const altAmount = formatMoney(tx.amount, altCurrency);
 
-                    return (
-                      <div
-                        key={tx.id}
-                        className="py-3 px-1 sm:px-2 flex items-center justify-between gap-3 hover:bg-[var(--surface-hover)] rounded-xl transition-colors group"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
+                      return (
+                        <div
+                          key={tx.id}
+                          className="py-2.5 px-1 sm:px-2 rounded-2xl transition-all hover:bg-[var(--surface-hover)]/70"
+                        >
+                          {/* Summary Header Row */}
                           <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
-                            style={{
-                              backgroundColor: `${catInfo.color}18`,
-                              color: catInfo.color,
-                              border: `1px solid ${catInfo.color}30`,
-                            }}
+                            onClick={() => setExpandedTxId(isExpanded ? null : tx.id)}
+                            className="flex items-center justify-between gap-3 cursor-pointer select-none"
                           >
-                            <DynamicIcon name={catInfo.icon} size={18} />
-                          </div>
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
+                                style={{
+                                  backgroundColor: `${catInfo.color}18`,
+                                  color: catInfo.color,
+                                  border: `1px solid ${catInfo.color}30`,
+                                }}
+                              >
+                                <DynamicIcon name={catInfo.icon} size={18} />
+                              </div>
 
-                          <div className="min-w-0">
-                            <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] truncate">
-                              {tx.desc || catInfo.name}
-                            </p>
-                            <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] mt-0.5">
-                              <span>{catInfo.name}</span>
-                              <span>•</span>
-                              <span>{tx.date}</span>
-                              {accountObj && (
-                                <>
+                              <div className="min-w-0">
+                                <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] truncate">
+                                  {tx.desc || catInfo.name}
+                                </p>
+                                <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] mt-0.5">
+                                  <span>{catInfo.name}</span>
                                   <span>•</span>
-                                  <span className="text-indigo-500 dark:text-indigo-400 font-medium">{accountObj.name}</span>
-                                </>
-                              )}
+                                  <span>{tx.date}</span>
+                                  {accountObj && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="text-indigo-500 dark:text-indigo-400 font-medium">{accountObj.name}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                              <span
+                                className={`text-xs sm:text-sm font-bold tracking-tight ${
+                                  isInc ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                }`}
+                              >
+                                {isInc ? '+' : '-'} {formatMoney(tx.amount)}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedTxId(isExpanded ? null : tx.id);
+                                }}
+                                className={`p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] transition-transform duration-200 ${
+                                  isExpanded ? 'rotate-180 text-indigo-500' : ''
+                                }`}
+                                title={isExpanded ? t.hideDetails : t.viewDetails}
+                              >
+                                <ChevronDown size={16} />
+                              </button>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                          <span
-                            className={`text-xs sm:text-sm font-bold tracking-tight ${
-                              isInc ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                            }`}
+                          {/* Progressive Disclosure: Expanded Detail Panel */}
+                          {isExpanded && (
+                            <div className="mt-3 pt-3 pb-2 px-3 sm:px-4 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 animate-slide-up text-xs">
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+                                <div>
+                                  <span className="text-[var(--text-muted)] block font-medium">{t.refId}</span>
+                                  <span className="font-mono font-semibold text-[var(--text-primary)] mt-0.5 block truncate">
+                                    #TX-{tx.id.replace('tx_', '').slice(-8).toUpperCase()}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="text-[var(--text-muted)] block font-medium">{t.account}</span>
+                                  <span className="font-semibold text-indigo-600 dark:text-indigo-400 mt-0.5 block truncate">
+                                    {accountObj?.name || 'Default Account'}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="text-[var(--text-muted)] block font-medium">{t.convertedEst}</span>
+                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+                                    ≈ {altAmount}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="text-[var(--text-muted)] block font-medium">{t.type}</span>
+                                  <span
+                                    className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mt-0.5 ${
+                                      isInc
+                                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                        : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                                    }`}
+                                  >
+                                    {isInc ? t.income : t.expense}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {tx.desc && (
+                                <div className="pt-2 border-t border-[var(--border)]">
+                                  <span className="text-[10px] font-medium text-[var(--text-muted)] block">{t.description}:</span>
+                                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-medium">{tx.desc}</p>
+                                </div>
+                              )}
+
+                              {/* Progressive Disclosure Action Buttons */}
+                              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
+                                <button
+                                  onClick={() => {
+                                    setEditingTx(tx);
+                                    setTxModalOpen(true);
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+                                >
+                                  <Pencil size={13} />
+                                  <span>{t.edit}</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteTransaction(tx.id)}
+                                  className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5 transition-all"
+                                >
+                                  <Trash2 size={13} />
+                                  <span>{t.delete}</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Progressive Pagination Controls */}
+                  {filteredTransactions.length > 10 && (
+                    <div className="flex items-center justify-between pt-4 border-t border-[var(--border)] text-xs">
+                      <span className="text-[var(--text-muted)] font-medium">
+                        Showing {Math.min(txVisibleCount, filteredTransactions.length)} of {filteredTransactions.length}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {txVisibleCount < filteredTransactions.length ? (
+                          <>
+                            <button
+                              onClick={() => setTxVisibleCount((prev) => prev + 10)}
+                              className="px-3 py-1.5 rounded-xl bg-[var(--surface-hover)] text-indigo-600 dark:text-indigo-400 font-bold border border-[var(--border)] hover:bg-indigo-500/10 transition-all flex items-center gap-1"
+                            >
+                              <ChevronDown size={14} />
+                              <span>{t.showMore} (+10)</span>
+                            </button>
+                            <button
+                              onClick={() => setTxVisibleCount(filteredTransactions.length)}
+                              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all shadow-sm"
+                            >
+                              <span>{t.all} ({filteredTransactions.length})</span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => setTxVisibleCount(10)}
+                            className="px-3 py-1.5 rounded-xl bg-[var(--surface-hover)] text-[var(--text-secondary)] font-bold border border-[var(--border)] hover:bg-[var(--surface)] transition-all flex items-center gap-1"
                           >
-                            {isInc ? '+' : '-'} {formatMoney(tx.amount)}
-                          </span>
-
-                          <div className="flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => {
-                                setEditingTx(tx);
-                                setTxModalOpen(true);
-                              }}
-                              className="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-muted)] hover:text-indigo-500"
-                              title={t.edit}
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTransaction(tx.id)}
-                              className="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-muted)] hover:text-rose-500"
-                              title={t.delete}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
+                            <ChevronUp size={14} />
+                            <span>{t.showLess}</span>
+                          </button>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -2161,19 +2305,24 @@ export default function App() {
                     const percent = Math.min(200, Math.round((spent / (b.limit || 1)) * 100));
                     const isOver = spent > b.limit;
                     const isWarn = !isOver && percent >= 80;
+                    const isExpanded = expandedBudgetId === b.id;
 
                     return (
                       <div
                         key={b.id}
-                        className="p-4 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 shadow-sm"
+                        className="p-4 rounded-2xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 shadow-sm hover:border-indigo-500/30 transition-all"
                       >
-                        <div className="flex items-center justify-between">
+                        {/* Summary Header */}
+                        <div
+                          onClick={() => setExpandedBudgetId(isExpanded ? null : b.id)}
+                          className="flex items-center justify-between cursor-pointer select-none"
+                        >
                           <div className="flex items-center gap-2.5">
                             <div
-                              className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+                              className="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm"
                               style={{ backgroundColor: catInfo.color }}
                             >
-                              <DynamicIcon name={catInfo.icon} size={15} />
+                              <DynamicIcon name={catInfo.icon} size={16} />
                             </div>
                             <div>
                               <p className="text-xs font-bold text-[var(--text-primary)]">{catInfo.name}</p>
@@ -2183,69 +2332,119 @@ export default function App() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                setEditingBudget(b);
-                                setBudgetModalOpen(true);
-                              }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-indigo-500"
-                              title={t.edit}
-                            >
-                              <Pencil size={13} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setBudgetLimits((prev) => prev.filter((x) => x.id !== b.id));
-                                showToast(t.delete, 'success');
-                              }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-rose-500"
-                              title={t.delete}
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Progress Bar & Status Pill */}
-                        <div className="space-y-1.5">
-                          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                isOver ? 'bg-rose-500' : isWarn ? 'bg-amber-500' : 'bg-emerald-500'
-                              }`}
-                              style={{ width: `${Math.min(100, percent)}%` }}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between text-[11px]">
-                            <span className="font-semibold text-[var(--text-secondary)]">
-                              {t.spentSoFar}: {formatMoney(spent)}
-                            </span>
+                          <div className="flex items-center gap-2">
                             <span
-                              className={`font-bold flex items-center gap-1 ${
-                                isOver ? 'text-rose-600 dark:text-rose-400' : isWarn ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                isOver
+                                  ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                                  : isWarn
+                                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                  : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                               }`}
                             >
-                              {isOver ? (
-                                <>
-                                  <AlertCircle size={12} />
-                                  <span>{t.budgetStatusDanger} (+{formatMoney(spent - b.limit)})</span>
-                                </>
-                              ) : isWarn ? (
-                                <>
-                                  <AlertTriangle size={12} />
-                                  <span>{percent}% {t.budgetStatusWarn}</span>
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle2 size={12} />
-                                  <span>{t.remaining}: {formatMoney(b.limit - spent)}</span>
-                                </>
-                              )}
+                              {percent}%
                             </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedBudgetId(isExpanded ? null : b.id);
+                              }}
+                              className={`p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-transform duration-200 ${
+                                isExpanded ? 'rotate-180 text-indigo-500' : ''
+                              }`}
+                              title={isExpanded ? t.hideDetails : t.viewDetails}
+                            >
+                              <ChevronDown size={15} />
+                            </button>
                           </div>
                         </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isOver ? 'bg-rose-500' : isWarn ? 'bg-amber-500' : 'bg-emerald-500'
+                            }`}
+                            style={{ width: `${Math.min(100, percent)}%` }}
+                          />
+                        </div>
+
+                        {/* Summary Status Line */}
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-semibold text-[var(--text-secondary)]">
+                            {t.spentSoFar}: {formatMoney(spent)}
+                          </span>
+                          <span
+                            className={`font-bold flex items-center gap-1 ${
+                              isOver ? 'text-rose-600 dark:text-rose-400' : isWarn ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                            }`}
+                          >
+                            {isOver ? (
+                              <>
+                                <AlertCircle size={12} />
+                                <span>{t.budgetStatusDanger} (+{formatMoney(spent - b.limit)})</span>
+                              </>
+                            ) : isWarn ? (
+                              <>
+                                <AlertTriangle size={12} />
+                                <span>{percent}% {t.budgetStatusWarn}</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 size={12} />
+                                <span>{t.remaining}: {formatMoney(b.limit - spent)}</span>
+                              </>
+                            )}
+                          </span>
+                        </div>
+
+                        {/* Progressive Disclosure Panel */}
+                        {isExpanded && (
+                          <div className="pt-2.5 border-t border-[var(--border)] space-y-2.5 animate-slide-up text-xs">
+                            <div className="grid grid-cols-2 gap-2 text-[11px]">
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.spentSoFar}</span>
+                                <span className="font-bold text-[var(--text-primary)] mt-0.5 block">{formatMoney(spent)}</span>
+                              </div>
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.remaining}</span>
+                                <span className={`font-bold mt-0.5 block ${isOver ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                  {isOver ? `-${formatMoney(spent - b.limit)}` : formatMoney(b.limit - spent)}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+                              <span>{t.channel}: {catInfo.name}</span>
+                              <span className="font-semibold text-indigo-500">{percent}% of limit</span>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
+                              <button
+                                onClick={() => {
+                                  setEditingBudget(b);
+                                  setBudgetModalOpen(true);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                              >
+                                <Pencil size={13} />
+                                <span>{t.edit}</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setBudgetLimits((prev) => prev.filter((x) => x.id !== b.id));
+                                  showToast(t.delete, 'success');
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5"
+                              >
+                                <Trash2 size={13} />
+                                <span>{t.delete}</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -2399,73 +2598,132 @@ export default function App() {
                     <p className="text-[11px] text-[var(--text-muted)]">{t.noAutoSaveHistorySub}</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                     {autoSavePlan.history.map((item) => {
                       const isWithdraw = item.type === 'withdraw';
+                      const isExpanded = expandedAutoSaveId === item.id;
+                      const altCurrency = currency === 'USD' ? 'KHR' : 'USD';
+                      const altAmount = formatMoney(item.amount, altCurrency);
+
                       return (
                         <div
                           key={item.id}
-                          className="p-3 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] flex items-center justify-between gap-3 shadow-sm hover:border-teal-500/30 transition-all"
+                          className="p-3 rounded-2xl bg-[var(--input-bg)] border border-[var(--border)] shadow-sm hover:border-teal-500/30 transition-all"
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                isWithdraw
-                                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25'
-                                  : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
-                              }`}
-                            >
-                              {isWithdraw ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
-                            </div>
-
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span
-                                  className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
-                                    isWithdraw
-                                      ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                                      : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                                  }`}
-                                >
-                                  {isWithdraw ? t.withdraw : t.deposit}
-                                </span>
-                                <span className="text-xs font-bold text-[var(--text-primary)] truncate">
-                                  {item.note || (isWithdraw ? t.withdrawFromVault : t.depositToVault)}
-                                </span>
+                          {/* Summary Row */}
+                          <div
+                            onClick={() => setExpandedAutoSaveId(isExpanded ? null : item.id)}
+                            className="flex items-center justify-between gap-3 cursor-pointer select-none"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                  isWithdraw
+                                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25'
+                                    : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25'
+                                }`}
+                              >
+                                {isWithdraw ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
                               </div>
-                              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
-                                {item.date} • {item.accountName || accounts.find((a) => a.id === item.accountId)?.name || t.directVault}
-                              </p>
+
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span
+                                    className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                                      isWithdraw
+                                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                        : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                    }`}
+                                  >
+                                    {isWithdraw ? t.withdraw : t.deposit}
+                                  </span>
+                                  <span className="text-xs font-bold text-[var(--text-primary)] truncate">
+                                    {item.note || (isWithdraw ? t.withdrawFromVault : t.depositToVault)}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                                  {item.date} • {item.accountName || accounts.find((a) => a.id === item.accountId)?.name || t.directVault}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2.5 shrink-0">
+                              <span
+                                className={`text-xs sm:text-sm font-extrabold ${
+                                  isWithdraw ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                                }`}
+                              >
+                                {isWithdraw ? '-' : '+'}{formatMoney(item.amount)}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedAutoSaveId(isExpanded ? null : item.id);
+                                }}
+                                className={`p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-transform duration-200 ${
+                                  isExpanded ? 'rotate-180 text-teal-500' : ''
+                                }`}
+                                title={isExpanded ? t.hideDetails : t.viewDetails}
+                              >
+                                <ChevronDown size={15} />
+                              </button>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3 shrink-0">
-                            <span
-                              className={`text-xs sm:text-sm font-extrabold ${
-                                isWithdraw ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
-                              }`}
-                            >
-                              {isWithdraw ? '-' : '+'}{formatMoney(item.amount)}
-                            </span>
+                          {/* Progressive Disclosure Panel */}
+                          {isExpanded && (
+                            <div className="mt-3 pt-3 border-t border-[var(--border)] space-y-2.5 animate-slide-up text-xs">
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-[11px]">
+                                <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                  <span className="text-[var(--text-muted)] block font-medium">{t.refId}</span>
+                                  <span className="font-mono font-semibold text-[var(--text-primary)] mt-0.5 block truncate">
+                                    #STASH-{item.id.slice(-6).toUpperCase()}
+                                  </span>
+                                </div>
 
-                            {/* Edit & Delete Action Buttons */}
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => setEditingAutoSaveHistory(item)}
-                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-teal-600 dark:hover:text-teal-400 hover:bg-[var(--surface-hover)] transition-all"
-                                title={t.editHistoryItem}
-                              >
-                                <Pencil size={13} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteAutoSaveHistory(item.id)}
-                                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-[var(--surface-hover)] transition-all"
-                                title={t.deleteHistoryItem}
-                              >
-                                <Trash2 size={13} />
-                              </button>
+                                <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                  <span className="text-[var(--text-muted)] block font-medium">{t.channel}</span>
+                                  <span className="font-semibold text-teal-600 dark:text-teal-400 mt-0.5 block truncate">
+                                    {item.accountName || accounts.find((a) => a.id === item.accountId)?.name || t.directVault}
+                                  </span>
+                                </div>
+
+                                <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] col-span-2 sm:col-span-1">
+                                  <span className="text-[var(--text-muted)] block font-medium">{t.convertedEst}</span>
+                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+                                    ≈ {altAmount}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {item.note && (
+                                <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                  <span className="text-[10px] text-[var(--text-muted)] block font-medium">{t.notes}:</span>
+                                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-medium">{item.note}</p>
+                                </div>
+                              )}
+
+                              {/* Progressive Action Controls */}
+                              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
+                                <button
+                                  onClick={() => setEditingAutoSaveHistory(item)}
+                                  className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-teal-600 dark:text-teal-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                                >
+                                  <Pencil size={13} />
+                                  <span>{t.edit}</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteAutoSaveHistory(item.id)}
+                                  className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5"
+                                >
+                                  <Trash2 size={13} />
+                                  <span>{t.delete}</span>
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
                       );
                     })}
@@ -2511,99 +2769,153 @@ export default function App() {
                   {savingsGoals.map((g) => {
                     const percent = Math.min(100, Math.round(((g.current || 0) / (g.target || 1)) * 100));
                     const isDone = g.current >= g.target;
+                    const isExpanded = expandedGoalId === g.id;
+                    const altCurrency = currency === 'USD' ? 'KHR' : 'USD';
+                    const altTarget = formatMoney(g.target, altCurrency);
+                    const altCurrent = formatMoney(g.current, altCurrency);
 
                     return (
                       <div
                         key={g.id}
-                        className="p-4 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 shadow-sm"
+                        className="p-4 rounded-2xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 shadow-sm hover:border-purple-500/30 transition-all"
                       >
-                        <div className="flex items-center justify-between">
+                        {/* Summary Header */}
+                        <div
+                          onClick={() => setExpandedGoalId(isExpanded ? null : g.id)}
+                          className="flex items-center justify-between cursor-pointer select-none"
+                        >
                           <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-500 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-500 dark:text-purple-400 border border-purple-500/20 flex items-center justify-center shadow-sm">
                               {isDone ? <Trophy size={18} className="text-amber-500 dark:text-amber-400" /> : <PiggyBank size={18} />}
                             </div>
                             <div>
                               <p className="text-xs font-bold text-[var(--text-primary)]">{g.name}</p>
                               <p className="text-[11px] text-[var(--text-muted)]">
-                                {t.targetAmount}: {formatMoney(g.target)} {g.date && `• ${g.date}`}
+                                {t.targetAmount}: {formatMoney(g.target)}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                setEditingGoal(g);
-                                setGoalModalOpen(true);
-                              }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-purple-500"
-                              title={t.edit}
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                isDone
+                                  ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                  : 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
+                              }`}
                             >
-                              <Pencil size={13} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSavingsGoals((prev) => prev.filter((x) => x.id !== g.id));
-                                showToast(t.delete, 'success');
-                              }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-rose-500"
-                              title={t.delete}
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Progress */}
-                        <div className="space-y-1.5">
-                          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
-                              style={{ width: `${percent}%` }}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-[var(--text-primary)]">
-                              {formatMoney(g.current)} <span className="text-[var(--text-muted)] font-normal">({percent}%)</span>
+                              {percent}%
                             </span>
-                            {isDone ? (
-                              <span className="text-[11px] font-bold text-amber-500 dark:text-amber-400 flex items-center gap-1">
-                                <Award size={13} />
-                                <span>{t.goalAchieved}</span>
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-[var(--text-muted)]">
-                                {formatMoney(g.target - g.current)} {t.remaining}
-                              </span>
-                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedGoalId(isExpanded ? null : g.id);
+                              }}
+                              className={`p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-transform duration-200 ${
+                                isExpanded ? 'rotate-180 text-purple-500' : ''
+                              }`}
+                              title={isExpanded ? t.hideDetails : t.viewDetails}
+                            >
+                              <ChevronDown size={15} />
+                            </button>
                           </div>
                         </div>
 
-                        {/* Quick Deposit / Withdraw Buttons */}
-                        <div className="flex items-center gap-2 pt-1">
-                          <button
-                            onClick={() => {
-                              setSelectedGoalForFund(g);
-                              setFundActionType('deposit');
-                              setGoalFundModalOpen(true);
-                            }}
-                            className="flex-1 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-xs font-semibold flex items-center justify-center gap-1"
-                          >
-                            <Plus size={13} />
-                            <span>{t.addFunds}</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedGoalForFund(g);
-                              setFundActionType('withdraw');
-                              setGoalFundModalOpen(true);
-                            }}
-                            className="flex-1 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)] border border-[var(--border)] text-xs font-semibold flex items-center justify-center gap-1"
-                          >
-                            <span>{t.withdrawFunds}</span>
-                          </button>
+                        {/* Progress Bar */}
+                        <div className="w-full bg-slate-200 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
+                            style={{ width: `${percent}%` }}
+                          />
                         </div>
+
+                        {/* Summary Status */}
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-[var(--text-primary)]">
+                            {formatMoney(g.current)} <span className="text-[var(--text-muted)] font-normal">({percent}%)</span>
+                          </span>
+                          {isDone ? (
+                            <span className="text-[11px] font-bold text-amber-500 dark:text-amber-400 flex items-center gap-1">
+                              <Award size={13} />
+                              <span>{t.goalAchieved}</span>
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-[var(--text-muted)]">
+                              {formatMoney(g.target - g.current)} {t.remaining}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Progressive Disclosure Panel */}
+                        {isExpanded && (
+                          <div className="pt-2.5 border-t border-[var(--border)] space-y-2.5 animate-slide-up text-xs">
+                            <div className="grid grid-cols-2 gap-2 text-[11px]">
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.targetDate}</span>
+                                <span className="font-semibold text-[var(--text-primary)] mt-0.5 block truncate">
+                                  {g.date || 'Flexible timeline'}
+                                </span>
+                              </div>
+
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.convertedEst}</span>
+                                <span className="font-semibold text-purple-600 dark:text-purple-400 mt-0.5 block truncate">
+                                  {altCurrent} / {altTarget}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Fund Actions Row */}
+                            <div className="flex items-center gap-2 pt-1">
+                              <button
+                                onClick={() => {
+                                  setSelectedGoalForFund(g);
+                                  setFundActionType('deposit');
+                                  setGoalFundModalOpen(true);
+                                }}
+                                className="flex-1 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center justify-center gap-1 shadow-sm transition-all"
+                              >
+                                <Plus size={13} />
+                                <span>{t.addFunds}</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedGoalForFund(g);
+                                  setFundActionType('withdraw');
+                                  setGoalFundModalOpen(true);
+                                }}
+                                className="flex-1 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-secondary)] border border-[var(--border)] text-xs font-semibold flex items-center justify-center gap-1 transition-all"
+                              >
+                                <span>{t.withdrawFunds}</span>
+                              </button>
+                            </div>
+
+                            {/* Edit / Delete Row */}
+                            <div className="flex items-center justify-end gap-2 pt-1 border-t border-[var(--border)]">
+                              <button
+                                onClick={() => {
+                                  setEditingGoal(g);
+                                  setGoalModalOpen(true);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-purple-600 dark:text-purple-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                              >
+                                <Pencil size={13} />
+                                <span>{t.edit}</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSavingsGoals((prev) => prev.filter((x) => x.id !== g.id));
+                                  showToast(t.delete, 'success');
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5"
+                              >
+                                <Trash2 size={13} />
+                                <span>{t.delete}</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -2707,77 +3019,124 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                {accounts.map((acc) => (
-                  <div
-                    key={acc.id}
-                    className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-sm flex-shrink-0"
-                          style={{ backgroundColor: acc.color || '#6366f1' }}
-                        >
-                          <DynamicIcon name={acc.icon || 'landmark'} size={20} />
+                {accounts.map((acc) => {
+                  const isExpanded = expandedAccountId === acc.id;
+                  const txCount = transactions.filter((tx) => tx.accountId === acc.id).length;
+                  const altCurrency = currency === 'USD' ? 'KHR' : 'USD';
+                  const altBal = formatMoney(acc.balance, altCurrency);
+
+                  return (
+                    <div
+                      key={acc.id}
+                      className="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+                    >
+                      {/* Summary Header */}
+                      <div
+                        onClick={() => setExpandedAccountId(isExpanded ? null : acc.id)}
+                        className="flex items-start justify-between gap-3 cursor-pointer select-none"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-sm flex-shrink-0"
+                            style={{ backgroundColor: acc.color || '#6366f1' }}
+                          >
+                            <DynamicIcon name={acc.icon || 'landmark'} size={20} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-[var(--text-primary)] truncate">
+                              {acc.name}
+                            </p>
+                            <span className="inline-block mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[var(--surface-hover)] text-[var(--text-muted)]">
+                              {t[acc.type] || acc.type}
+                            </span>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-[var(--text-primary)] truncate">
-                            {acc.name}
-                          </p>
-                          <span className="inline-block mt-0.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[var(--surface-hover)] text-[var(--text-muted)]">
-                            {t[acc.type] || acc.type}
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedAccountId(isExpanded ? null : acc.id);
+                            }}
+                            className={`p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-transform duration-200 ${
+                              isExpanded ? 'rotate-180 text-indigo-500' : ''
+                            }`}
+                            title={isExpanded ? t.hideDetails : t.viewDetails}
+                          >
+                            <ChevronDown size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Summary Balance Line */}
+                      <div className="pt-2 border-t border-[var(--border)] flex items-end justify-between">
+                        <div>
+                          <span className="text-[11px] text-[var(--text-muted)] block font-medium">
+                            {t.initialBalance}
+                          </span>
+                          <span className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight">
+                            {formatMoney(acc.balance)}
                           </span>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-1 flex-shrink-0">
                         <button
-                          onClick={() => {
-                            setEditingAccount(acc);
-                            setAccountModalOpen(true);
-                          }}
-                          className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-indigo-600 hover:bg-[var(--surface-hover)] transition-colors"
-                          title={t.edit}
+                          onClick={() => setTransferModalOpen(true)}
+                          className="p-2 rounded-xl bg-[var(--surface-hover)] text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                          title={t.transferFunds}
                         >
-                          <Pencil size={14} />
+                          <ArrowRightLeft size={15} />
                         </button>
-                        {accounts.length > 1 && (
-                          <button
-                            onClick={() => {
-                              setAccounts((prev) => prev.filter((x) => x.id !== acc.id));
-                              showToast(t.delete, 'success');
-                            }}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-rose-600 hover:bg-[var(--surface-hover)] transition-colors"
-                            title={t.delete}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="pt-3 border-t border-[var(--border)] flex items-end justify-between">
-                      <div>
-                        <span className="text-[11px] text-[var(--text-muted)] block font-medium">
-                          {t.initialBalance}
-                        </span>
-                        <span className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight">
-                          {formatMoney(acc.balance)}
-                        </span>
                       </div>
 
-                      <button
-                        onClick={() => {
-                          setTransferModalOpen(true);
-                        }}
-                        className="p-2 rounded-xl bg-[var(--surface-hover)] text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
-                        title={t.transferFunds}
-                      >
-                        <ArrowRightLeft size={15} />
-                      </button>
+                      {/* Progressive Disclosure Panel */}
+                      {isExpanded && (
+                        <div className="pt-3 border-t border-[var(--border)] space-y-2.5 animate-slide-up text-xs">
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div className="p-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border)]">
+                              <span className="text-[var(--text-muted)] block font-medium">{t.convertedEst}</span>
+                              <span className="font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 block truncate">
+                                ≈ {altBal}
+                              </span>
+                            </div>
+                            <div className="p-2 rounded-lg bg-[var(--input-bg)] border border-[var(--border)]">
+                              <span className="text-[var(--text-muted)] block font-medium">Activity</span>
+                              <span className="font-bold text-[var(--text-primary)] mt-0.5 block">
+                                {txCount} recorded txs
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons Row */}
+                          <div className="flex items-center justify-end gap-2 pt-1 border-t border-[var(--border)]">
+                            <button
+                              onClick={() => {
+                                setEditingAccount(acc);
+                                setAccountModalOpen(true);
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-[var(--input-bg)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-indigo-600 dark:text-indigo-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                            >
+                              <Pencil size={13} />
+                              <span>{t.edit}</span>
+                            </button>
+                            {accounts.length > 1 && (
+                              <button
+                                onClick={() => {
+                                  setAccounts((prev) => prev.filter((x) => x.id !== acc.id));
+                                  showToast(t.delete, 'success');
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5"
+                              >
+                                <Trash2 size={13} />
+                                <span>{t.delete}</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -2821,52 +3180,60 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   {recurringTxs.map((r) => {
                     const catInfo = getCategoryDetails(r.category);
+                    const isExpanded = expandedRecurringId === r.id;
+                    const accountObj = accounts.find((a) => a.id === r.accountId);
+                    const altCurrency = currency === 'USD' ? 'KHR' : 'USD';
+                    const altAmount = formatMoney(r.amount, altCurrency);
+
                     return (
                       <div
                         key={r.id}
-                        className="p-4 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] flex flex-col justify-between space-y-3 shadow-sm"
+                        className="p-4 rounded-2xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 shadow-sm hover:border-cyan-500/30 transition-all"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
+                        {/* Summary Header */}
+                        <div
+                          onClick={() => setExpandedRecurringId(isExpanded ? null : r.id)}
+                          className="flex items-start justify-between cursor-pointer select-none"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
                             <div
-                              className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+                              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm flex-shrink-0"
                               style={{ backgroundColor: catInfo.color }}
                             >
                               <DynamicIcon name={catInfo.icon} size={18} />
                             </div>
-                            <div>
-                              <p className="text-xs font-bold text-[var(--text-primary)]">{r.desc}</p>
-                              <p className="text-[11px] text-[var(--text-muted)]">
+                            <div className="min-w-0">
+                              <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] truncate">{r.desc}</p>
+                              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
                                 {t[r.freq] || r.freq} • {t.nextDueDate}: {r.nextDate}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">
+                              {formatMoney(r.amount)}
+                            </span>
                             <button
-                              onClick={() => {
-                                setEditingRecurring(r);
-                                setRecurringModalOpen(true);
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedRecurringId(isExpanded ? null : r.id);
                               }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-cyan-500"
+                              className={`p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-transform duration-200 ${
+                                isExpanded ? 'rotate-180 text-cyan-500' : ''
+                              }`}
+                              title={isExpanded ? t.hideDetails : t.viewDetails}
                             >
-                              <Pencil size={13} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setRecurringTxs((prev) => prev.filter((x) => x.id !== r.id));
-                                showToast(t.delete, 'success');
-                              }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-rose-500"
-                            >
-                              <Trash2 size={13} />
+                              <ChevronDown size={15} />
                             </button>
                           </div>
                         </div>
 
+                        {/* Quick Auto-Pay Action Bar */}
                         <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
-                          <span className="text-sm font-bold text-[var(--text-primary)]">
-                            {formatMoney(r.amount)}
+                          <span className="text-[11px] text-[var(--text-muted)]">
+                            {accountObj ? `${t.channel}: ${accountObj.name}` : catInfo.name}
                           </span>
 
                           <button
@@ -2890,11 +3257,60 @@ export default function App() {
                               gainXp(10);
                               showToast(`Recorded: ${r.desc}`, 'success');
                             }}
-                            className="px-3 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-600 dark:text-cyan-400 text-xs font-bold transition-all"
+                            className="px-3 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-600 dark:text-cyan-400 text-xs font-bold transition-all shadow-sm"
                           >
                             {t.autoPay}
                           </button>
                         </div>
+
+                        {/* Progressive Disclosure Panel */}
+                        {isExpanded && (
+                          <div className="pt-2.5 border-t border-[var(--border)] space-y-2.5 animate-slide-up text-xs">
+                            <div className="grid grid-cols-2 gap-2 text-[11px]">
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.refId}</span>
+                                <span className="font-mono font-semibold text-[var(--text-primary)] mt-0.5 block truncate">
+                                  #REC-{r.id.slice(-6).toUpperCase()}
+                                </span>
+                              </div>
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.convertedEst}</span>
+                                <span className="font-semibold text-cyan-600 dark:text-cyan-400 mt-0.5 block truncate">
+                                  ≈ {altAmount}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-between text-[11px]">
+                              <span className="text-[var(--text-muted)]">{t.fullSchedule}:</span>
+                              <span className="font-semibold text-[var(--text-primary)]">{t[r.freq] || r.freq} recurring</span>
+                            </div>
+
+                            {/* Action Buttons Row */}
+                            <div className="flex items-center justify-end gap-2 pt-1 border-t border-[var(--border)]">
+                              <button
+                                onClick={() => {
+                                  setEditingRecurring(r);
+                                  setRecurringModalOpen(true);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-cyan-600 dark:text-cyan-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                              >
+                                <Pencil size={13} />
+                                <span>{t.edit}</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setRecurringTxs((prev) => prev.filter((x) => x.id !== r.id));
+                                  showToast(t.delete, 'success');
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5"
+                              >
+                                <Trash2 size={13} />
+                                <span>{t.delete}</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -2947,24 +3363,32 @@ export default function App() {
                     const percent = Math.min(100, Math.round(((d.paid || 0) / (d.total || 1)) * 100));
                     const isSettled = remaining === 0;
                     const isLent = d.type === 'lent';
+                    const isExpanded = expandedDebtId === d.id;
+                    const altCurrency = currency === 'USD' ? 'KHR' : 'USD';
+                    const altTotal = formatMoney(d.total, altCurrency);
+                    const altRemaining = formatMoney(remaining, altCurrency);
 
                     return (
                       <div
                         key={d.id}
-                        className="p-4 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 shadow-sm"
+                        className="p-4 rounded-2xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3 shadow-sm hover:border-amber-500/30 transition-all"
                       >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-2.5">
+                        {/* Summary Header */}
+                        <div
+                          onClick={() => setExpandedDebtId(isExpanded ? null : d.id)}
+                          className="flex items-start justify-between cursor-pointer select-none"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
                             <div
-                              className={`w-9 h-9 rounded-xl flex items-center justify-center text-white ${
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm flex-shrink-0 ${
                                 isLent ? 'bg-emerald-600' : 'bg-rose-600'
                               }`}
                             >
                               <HandCoins size={17} />
                             </div>
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-xs font-bold text-[var(--text-primary)]">{d.person}</p>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)] truncate">{d.person}</p>
                                 <span
                                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                                     isLent ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
@@ -2973,66 +3397,112 @@ export default function App() {
                                   {isLent ? t.lentTab.split(' ')[0] : t.borrowedTab.split(' ')[0]}
                                 </span>
                               </div>
-                              <p className="text-[11px] text-[var(--text-muted)]">
-                                {t.dueDate}: {d.dueDate || 'N/A'} {d.notes && `• ${d.notes}`}
+                              <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                                {t.dueDate}: {d.dueDate || 'N/A'}
                               </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                setEditingDebt(d);
-                                setDebtModalOpen(true);
-                              }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-amber-500"
-                            >
-                              <Pencil size={13} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setDebts((prev) => prev.filter((x) => x.id !== d.id));
-                                showToast(t.delete, 'success');
-                              }}
-                              className="p-1 rounded-lg text-[var(--text-muted)] hover:text-rose-500"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-right">
+                              <span className={`text-xs sm:text-sm font-bold block ${isSettled ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                {isSettled ? t.debtFullyPaid : formatMoney(remaining)}
+                              </span>
+                              <span className="text-[10px] text-[var(--text-muted)] block">
+                                {isSettled ? 'Settled' : t.remainingDebt}
+                              </span>
+                            </div>
 
-                        {/* Progress */}
-                        <div className="space-y-1.5">
-                          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                isLent ? 'bg-emerald-500' : 'bg-amber-500'
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedDebtId(isExpanded ? null : d.id);
+                              }}
+                              className={`p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-transform duration-200 ${
+                                isExpanded ? 'rotate-180 text-amber-500' : ''
                               }`}
-                              style={{ width: `${percent}%` }}
-                            />
-                          </div>
-
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-semibold text-[var(--text-secondary)]">
-                              {t.amountPaid}: {formatMoney(d.paid)} / {formatMoney(d.total)}
-                            </span>
-                            <span className={`font-bold ${isSettled ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                              {isSettled ? t.debtFullyPaid : `${t.remainingDebt}: ${formatMoney(remaining)}`}
-                            </span>
+                              title={isExpanded ? t.hideDetails : t.viewDetails}
+                            >
+                              <ChevronDown size={15} />
+                            </button>
                           </div>
                         </div>
 
-                        {!isSettled && (
-                          <button
-                            onClick={() => {
-                              setSelectedDebtForPay(d);
-                              setDebtPayModalOpen(true);
-                            }}
-                            className="w-full py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center justify-center gap-1"
-                          >
-                            <Plus size={13} />
-                            <span>{t.recordPayment}</span>
-                          </button>
+                        {/* Progress Bar */}
+                        <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isLent ? 'bg-emerald-500' : 'bg-amber-500'
+                            }`}
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+
+                        {/* Progressive Disclosure Panel */}
+                        {isExpanded && (
+                          <div className="pt-2.5 border-t border-[var(--border)] space-y-2.5 animate-slide-up text-xs">
+                            <div className="grid grid-cols-2 gap-2 text-[11px]">
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.amountPaid}</span>
+                                <span className="font-bold text-[var(--text-primary)] mt-0.5 block">
+                                  {formatMoney(d.paid)} / {formatMoney(d.total)} ({percent}%)
+                                </span>
+                              </div>
+
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[var(--text-muted)] block font-medium">{t.convertedEst}</span>
+                                <span className="font-semibold text-amber-600 dark:text-amber-400 mt-0.5 block truncate">
+                                  Total ≈ {altTotal}
+                                </span>
+                              </div>
+                            </div>
+
+                            {d.notes && (
+                              <div className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                                <span className="text-[10px] text-[var(--text-muted)] block font-medium">{t.notes}:</span>
+                                <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-medium">{d.notes}</p>
+                              </div>
+                            )}
+
+                            {/* Record Payment Button */}
+                            {!isSettled && (
+                              <button
+                                onClick={() => {
+                                  setSelectedDebtForPay(d);
+                                  setDebtPayModalOpen(true);
+                                }}
+                                className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                              >
+                                <Plus size={14} />
+                                <span>{t.recordPayment}</span>
+                              </button>
+                            )}
+
+                            {/* Action Buttons Row */}
+                            <div className="flex items-center justify-end gap-2 pt-1 border-t border-[var(--border)]">
+                              <button
+                                onClick={() => {
+                                  setEditingDebt(d);
+                                  setDebtModalOpen(true);
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                              >
+                                <Pencil size={13} />
+                                <span>{t.edit}</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setDebts((prev) => prev.filter((x) => x.id !== d.id));
+                                  showToast(t.delete, 'success');
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5"
+                              >
+                                <Trash2 size={13} />
+                                <span>{t.delete}</span>
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     );
