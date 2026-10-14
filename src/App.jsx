@@ -907,7 +907,13 @@ export default function App() {
       {/* ═══════════════════════════════════════════════════════════════
           TOP APP HEADER / NAVBAR (FULL RESPONSIVE & UNCLUTTERED)
           ═══════════════════════════════════════════════════════════════ */}
-      <header className="sticky top-0 z-40 bg-[var(--nav-bg)] backdrop-blur-xl border-b border-[var(--border)] px-3 sm:px-6 h-16 flex items-center justify-between">
+      <header
+        className="sticky top-0 z-40 bg-[var(--nav-bg)] backdrop-blur-xl border-b border-[var(--border)] px-3 sm:px-6 flex items-center justify-between transition-all"
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          minHeight: 'calc(64px + env(safe-area-inset-top, 0px))',
+        }}
+      >
         {/* Brand with logo.png */}
         <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0">
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center p-0.5 shadow-md shadow-indigo-500/20">
@@ -1026,62 +1032,89 @@ export default function App() {
         </div>
       </header>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu with Solid Surface & Fullscreen Blurred Backdrop */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-16 bg-[var(--modal-bg)] border-b border-[var(--border)] shadow-2xl z-30 p-4 space-y-3 animate-slide-down">
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
-              { id: 'analytics', label: t.analyticsTab, icon: BarChart3 },
-              { id: 'budgets', label: t.budgetsGoalsTab, icon: Target },
-              { id: 'accounts', label: t.accountsTab, icon: Landmark },
-              { id: 'recurring', label: t.recurringTab, icon: RefreshCw },
-              { id: 'debt', label: t.debtTab, icon: HandCoins },
-              { id: 'gamification', label: t.gamificationTab, icon: Trophy },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    active
-                      ? 'bg-indigo-600 text-white shadow-md'
-                      : 'bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-start">
+          {/* Full-screen Blurred Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-xl transition-opacity animate-fade-in"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close menu backdrop"
+          />
 
-          <div className="flex items-center justify-between pt-2 border-t border-[var(--border)] text-xs">
-            <button
-              onClick={() => {
-                setLang(lang === 'en' ? 'kh' : 'en');
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-1.5 text-indigo-500 dark:text-indigo-400 font-bold"
-            >
-              <Globe size={14} />
-              <span>{lang === 'en' ? 'ភាសាខ្មែរ (KH)' : 'English (EN)'}</span>
-            </button>
-            <button
-              onClick={() => {
-                handleInstallClick();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-1.5 text-emerald-500 dark:text-emerald-400 font-bold"
-            >
-              <Download size={14} />
-              <span>{t.installApp}</span>
-            </button>
+          {/* Solid Drawer Card positioned below header */}
+          <div
+            className="relative z-10 w-full bg-white dark:bg-[#15182e] border-b border-slate-200/90 dark:border-white/10 shadow-2xl p-4 sm:p-5 space-y-3.5 animate-slide-down"
+            style={{
+              marginTop: 'calc(64px + env(safe-area-inset-top, 0px))',
+            }}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/5">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                {t.appName} Menu
+              </span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
+                { id: 'analytics', label: t.analyticsTab, icon: BarChart3 },
+                { id: 'budgets', label: t.budgetsGoalsTab, icon: Target },
+                { id: 'accounts', label: t.accountsTab, icon: Landmark },
+                { id: 'recurring', label: t.recurringTab, icon: RefreshCw },
+                { id: 'debt', label: t.debtTab, icon: HandCoins },
+                { id: 'gamification', label: t.gamificationTab, icon: Trophy },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      active
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    <Icon size={16} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-white/5 text-xs">
+              <button
+                onClick={() => {
+                  setLang(lang === 'en' ? 'kh' : 'en');
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 font-bold px-2 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
+              >
+                <Globe size={15} />
+                <span>{lang === 'en' ? 'ភាសាខ្មែរ (KH)' : 'English (EN)'}</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleInstallClick();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+              >
+                <Download size={15} />
+                <span>{t.installApp}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

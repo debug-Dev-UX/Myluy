@@ -203,19 +203,31 @@ button, a, input, select, textarea {
 .theme-btn { font-size: 1.1rem; padding: 7px 10px; }
 .mobile-menu-btn { display: none; }
 
-/* Mobile menu */
-.mobile-menu {
-  position: fixed;
-  top: 64px; left: 0; right: 0;
-  background: var(--modal-bg);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  z-index: 99;
-  animation: slideDown 0.2s ease;
+/* Safe area insets for iOS Home Screen PWA */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 }
-@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 
 .mobile-nav-link {
   display: flex;
