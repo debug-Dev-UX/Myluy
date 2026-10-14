@@ -11,8 +11,24 @@ import {
   ShoppingBag, HeartPulse, Smartphone, Dumbbell, Plane, Film,
   GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift,
   CircleStop, Play, CalendarClock, Infinity as InfinityIcon,
-  ArrowDownLeft, History, Minus, Eye, EyeOff, Radio, Loader2, Copy
+  ArrowDownLeft, History, Minus, Eye, EyeOff, Radio, Loader2, Copy,
+  Cloud, CloudOff, LogIn, LogOut, User, Mail, Lock
 } from 'lucide-react';
+import {
+  auth,
+  db,
+  googleProvider,
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile
+} from './firebase';
 import logoImg from './assets/logo.png';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -713,6 +729,15 @@ export default function App() {
   const [isRateFetching, setIsRateFetching] = useState(false);
   const [rateLatencyMs, setRateLatencyMs] = useState(38);
 
+  // Firebase Cloud Multi-Device Synchronization (Same data on Phone, Laptop, Tablet)
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [cloudSyncStatus, setCloudSyncStatus] = useState('offline'); // 'synced' | 'syncing' | 'offline' | 'error'
+  const [cloudLastSynced, setCloudLastSynced] = useState(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const isRemoteUpdatingRef = useRef(false);
+  const syncTimeoutRef = useRef(null);
+
   // Navigation
   // Tabs: 'dashboard' | 'analytics' | 'budgets' | 'accounts' | 'recurring' | 'debt' | 'gamification'
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -885,6 +910,159 @@ export default function App() {
   useEffect(() => saveLS('myluy_v3_c30', completed30Days), [completed30Days]);
   useEffect(() => saveLS('myluy_v3_autosave', autoSavePlan), [autoSavePlan]);
   useEffect(() => saveLS('myluy_hide_bal', hideBalance), [hideBalance]);
+
+  // ═══════════════════════════════════════════════════════════════
+  // FIREBASE CLOUD REAL-TIME MULTI-DEVICE SYNCHRONIZATION
+  // ═══════════════════════════════════════════════════════════════
+  const handlePushToCloud = useCallback(async (targetUid, notify = false) => {
+    const uid = targetUid || currentUser?.uid;
+    if (!uid) return;
+    try {
+      setCloudSyncStatus('syncing');
+      await setDoc(
+        doc(db, 'users', uid),
+        {
+          accounts,
+          transactions,
+          budgetLimits,
+          savingsGoals,
+          recurringTxs,
+          debts,
+          autoSavePlan,
+          customIncomeCats,
+          customExpenseCats,
+          userXp,
+          streakDays,
+          completed52Weeks,
+          completed30Days,
+          currency,
+          exchangeRate,
+          lastDeviceSyncedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+      setCloudSyncStatus('synced');
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setCloudLastSynced(nowStr);
+      if (notify) {
+        showToast('All devices synchronized in real-time!', 'success');
+      }
+    } catch (err) {
+      console.warn('Firestore push error:', err);
+      setCloudSyncStatus('error');
+    }
+  }, [
+    accounts,
+    transactions,
+    budgetLimits,
+    savingsGoals,
+    recurringTxs,
+    debts,
+    autoSavePlan,
+    customIncomeCats,
+    customExpenseCats,
+    userXp,
+    streakDays,
+    completed52Weeks,
+    completed30Days,
+    currency,
+    exchangeRate,
+    currentUser,
+    showToast,
+  ]);
+
+  // Auth Listener and Remote Firestore Real-Time Subscription
+  useEffect(() => {
+    let unsubscribeSnapshot = null;
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setIsAuthLoading(false);
+
+      if (user) {
+        setCloudSyncStatus('syncing');
+        const userDocRef = doc(db, 'users', user.uid);
+
+        unsubscribeSnapshot = onSnapshot(
+          userDocRef,
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              isRemoteUpdatingRef.current = true;
+              if (Array.isArray(data.accounts)) setAccounts(data.accounts);
+              if (Array.isArray(data.transactions)) setTransactions(data.transactions);
+              if (Array.isArray(data.budgetLimits)) setBudgetLimits(data.budgetLimits);
+              if (Array.isArray(data.savingsGoals)) setSavingsGoals(data.savingsGoals);
+              if (Array.isArray(data.recurringTxs)) setRecurringTxs(data.recurringTxs);
+              if (Array.isArray(data.debts)) setDebts(data.debts);
+              if (data.autoSavePlan) setAutoSavePlan(data.autoSavePlan);
+              if (Array.isArray(data.customIncomeCats)) setCustomIncomeCats(data.customIncomeCats);
+              if (Array.isArray(data.customExpenseCats)) setCustomExpenseCats(data.customExpenseCats);
+              if (typeof data.userXp === 'number') setUserXp(data.userXp);
+              if (typeof data.streakDays === 'number') setStreakDays(data.streakDays);
+              if (Array.isArray(data.completed52Weeks)) setCompleted52Weeks(data.completed52Weeks);
+              if (Array.isArray(data.completed30Days)) setCompleted30Days(data.completed30Days);
+              if (data.currency) setCurrency(data.currency);
+              if (data.exchangeRate) setExchangeRate(data.exchangeRate);
+              setCloudSyncStatus('synced');
+              setCloudLastSynced(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+              setTimeout(() => {
+                isRemoteUpdatingRef.current = false;
+              }, 400);
+            } else {
+              // Brand new user in Firestore: push local data up to cloud
+              handlePushToCloud(user.uid);
+            }
+          },
+          (err) => {
+            console.warn('Firestore snapshot error:', err);
+            setCloudSyncStatus('error');
+          }
+        );
+      } else {
+        if (unsubscribeSnapshot) {
+          unsubscribeSnapshot();
+          unsubscribeSnapshot = null;
+        }
+        setCloudSyncStatus('offline');
+      }
+    });
+
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeSnapshot) unsubscribeSnapshot();
+    };
+  }, [handlePushToCloud]);
+
+  // Debounced auto-save to Cloud Firestore on local data updates
+  useEffect(() => {
+    if (!currentUser || isRemoteUpdatingRef.current) return;
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    syncTimeoutRef.current = setTimeout(() => {
+      handlePushToCloud(currentUser.uid);
+    }, 850);
+    return () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+    };
+  }, [
+    accounts,
+    transactions,
+    budgetLimits,
+    savingsGoals,
+    recurringTxs,
+    debts,
+    autoSavePlan,
+    customIncomeCats,
+    customExpenseCats,
+    userXp,
+    streakDays,
+    completed52Weeks,
+    completed30Days,
+    currency,
+    exchangeRate,
+    currentUser,
+    handlePushToCloud,
+  ]);
 
   const t = dict[lang] || dict.en;
 
@@ -1706,6 +1884,40 @@ export default function App() {
             <span>{t.installApp}</span>
           </button>
 
+          {/* Cloud Multi-Device Sync / Account Button */}
+          {currentUser ? (
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              title={`Cloud Synced: ${currentUser.email || currentUser.displayName || 'Account'} (${cloudSyncStatus})`}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 shadow-sm transition-all active:scale-95"
+            >
+              {currentUser.photoURL ? (
+                <img
+                  src={currentUser.photoURL}
+                  alt="User"
+                  className="w-5 h-5 rounded-full object-cover border border-emerald-500/40"
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[10px] font-black">
+                  {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
+              <Cloud size={13} className={cloudSyncStatus === 'syncing' ? 'animate-pulse text-amber-500' : 'text-emerald-500'} />
+              <span className="hidden xl:inline max-w-[85px] truncate text-[11px]">
+                {currentUser.displayName?.split(' ')[0] || currentUser.email?.split('@')[0]}
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              title="Sign In to Sync across Phone, Laptop, and Tablet"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm shadow-indigo-600/25 transition-all active:scale-95"
+            >
+              <Cloud size={14} />
+              <span className="hidden sm:inline">Sync Cloud</span>
+            </button>
+          )}
+
           {/* Settings Button */}
           <button
             onClick={() => setSettingsModalOpen(true)}
@@ -1753,6 +1965,31 @@ export default function App() {
                 <X size={18} />
               </button>
             </div>
+
+            {/* Mobile Cloud Sync Banner */}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setAuthModalOpen(true);
+              }}
+              className="w-full p-2.5 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-emerald-500/10 border border-indigo-500/20 text-left flex items-center justify-between transition-all"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+                  <Cloud size={16} />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span>{currentUser ? 'Cloud Synced' : 'Sync With Other Devices'}</span>
+                    {currentUser && <span className="w-2 h-2 rounded-full bg-emerald-400"></span>}
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[200px]">
+                    {currentUser ? (currentUser.email || currentUser.displayName) : 'Connect phone & laptop together'}
+                  </div>
+                </div>
+              </div>
+              <ChevronRight size={14} className="text-indigo-500" />
+            </button>
 
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -4336,6 +4573,11 @@ export default function App() {
             setSettingsModalOpen(false);
             setExchangeModalOpen(true);
           }}
+          onOpenAuthModal={() => {
+            setSettingsModalOpen(false);
+            setAuthModalOpen(true);
+          }}
+          currentUser={currentUser}
           onInstallApp={handleInstallClick}
           lang={lang}
           setLang={setLang}
@@ -4427,6 +4669,22 @@ export default function App() {
             setExchangeModalOpen(false);
             setTxModalOpen(true);
           }}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL 17: FIREBASE CLOUD REAL-TIME MULTI-DEVICE SYNC & AUTH
+          ═══════════════════════════════════════════════════════════════ */}
+      {authModalOpen && (
+        <AuthSyncModal
+          open={authModalOpen}
+          onClose={() => setAuthModalOpen(false)}
+          currentUser={currentUser}
+          cloudSyncStatus={cloudSyncStatus}
+          cloudLastSynced={cloudLastSynced}
+          onForceSync={() => handlePushToCloud(currentUser?.uid, true)}
+          showToast={showToast}
+          t={t}
         />
       )}
 
@@ -5740,6 +5998,8 @@ function SettingsModal({
   onOpenCategories,
   onInstallApp,
   onRebootSplash,
+  onOpenAuthModal,
+  currentUser,
   lang,
   setLang,
   theme,
@@ -5768,6 +6028,33 @@ function SettingsModal({
         </div>
 
         <div className="space-y-3.5 divide-y divide-slate-100 dark:divide-white/10 text-xs">
+          {/* Cloud Synchronization across Phone & Laptop */}
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                onClose();
+                if (onOpenAuthModal) onOpenAuthModal();
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 hover:from-emerald-500/20 hover:to-teal-500/20 border border-emerald-500/25 text-left flex items-center justify-between text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-sm transition-all"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Cloud size={14} />
+                </div>
+                <div>
+                  <div className="font-extrabold flex items-center gap-1.5">
+                    <span>Cloud Sync (Same Data Everywhere)</span>
+                    {currentUser && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>}
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal truncate max-w-[190px]">
+                    {currentUser ? `Active: ${currentUser.email || currentUser.displayName}` : 'Sign in with Google / Email to link phone & PC'}
+                  </div>
+                </div>
+              </div>
+              <ChevronRight size={14} className="text-emerald-500 shrink-0" />
+            </button>
+          </div>
+
           {/* Language selection */}
           <div className="pt-2 flex items-center justify-between">
             <span className="font-bold text-slate-700 dark:text-slate-200">{t.language}</span>
@@ -6791,5 +7078,384 @@ function ExchangeCalculatorWidget({
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SUB-COMPONENT: FIREBASE CLOUD REAL-TIME MULTI-DEVICE SYNC MODAL
+   ═══════════════════════════════════════════════════════════════ */
+function AuthSyncModal({
+  open,
+  onClose,
+  currentUser,
+  cloudSyncStatus,
+  cloudLastSynced,
+  onForceSync,
+  showToast,
+  t,
+}) {
+  const [authMode, setAuthMode] = useState('signin'); // 'signin' | 'signup'
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  if (!open) return null;
+
+  const handleGoogleSignIn = async () => {
+    setIsSubmitting(true);
+    setErrorMsg(null);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      if (showToast) showToast('Signed in with Google! Multi-device sync enabled.', 'success');
+      onClose();
+    } catch (err) {
+      console.error('Google Auth Error:', err);
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setErrorMsg(err.message || 'Failed to sign in with Google');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEmailAuth = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setErrorMsg('Please enter both email and password');
+      return;
+    }
+    if (authMode === 'signup' && password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      if (authMode === 'signup') {
+        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        if (name && cred.user) {
+          try {
+            await updateProfile(cred.user, { displayName: name.trim() });
+          } catch {}
+        }
+        if (showToast) showToast('Account created! Multi-device sync active.', 'success');
+      } else {
+        await signInWithEmailAndPassword(auth, email.trim(), password);
+        if (showToast) showToast('Welcome back! Data synchronized across devices.', 'success');
+      }
+      onClose();
+    } catch (err) {
+      console.error('Email Auth Error:', err);
+      let friendly = err.message || 'Authentication failed';
+      if (err.code === 'auth/email-already-in-use') {
+        friendly = 'This email is already registered. Please click Sign In.';
+      } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        friendly = 'Incorrect email or password. Please try again.';
+      } else if (err.code === 'auth/user-not-found') {
+        friendly = 'No account found with this email. Please click Create Account.';
+      } else if (err.code === 'auth/weak-password') {
+        friendly = 'Password is too weak. Please use at least 6 characters.';
+      } else if (err.code === 'auth/invalid-email') {
+        friendly = 'Please enter a valid email address.';
+      }
+      setErrorMsg(friendly);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setIsSubmitting(true);
+    try {
+      await signOut(auth);
+      if (showToast) showToast('Signed out of cloud sync', 'info');
+      onClose();
+    } catch (err) {
+      console.error('Sign out error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-5 sm:p-6 space-y-4 animate-slide-up text-slate-900 dark:text-white"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center shadow-sm">
+              <Cloud size={20} />
+            </div>
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Multi-Device Cloud Sync</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  FIREBASE
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Share identical real-time data across Phone & PC
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* If user is already signed in */}
+        {currentUser ? (
+          <div className="space-y-4">
+            {/* User Profile Card */}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-emerald-500/10 border border-indigo-500/20 dark:border-indigo-400/20 space-y-3">
+              <div className="flex items-center gap-3">
+                {currentUser.photoURL ? (
+                  <img
+                    src={currentUser.photoURL}
+                    alt={currentUser.displayName || 'User'}
+                    className="w-12 h-12 rounded-2xl object-cover border-2 border-emerald-500/40 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-lg font-black shadow-sm">
+                    {(currentUser.displayName || currentUser.email || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                    {currentUser.displayName || 'My Luy User'}
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                    {currentUser.email}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                      Cloud Connected & Live Synced
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span>Last Cloud Sync: <strong className="text-slate-700 dark:text-slate-200 font-semibold">{cloudLastSynced || 'Just now'}</strong></span>
+                <span className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-white/10 text-indigo-600 dark:text-indigo-400 font-mono text-[10px]">
+                  ID: {currentUser.uid.slice(0, 8)}...
+                </span>
+              </div>
+            </div>
+
+            {/* Instruction Tip */}
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+              <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <Sparkles size={13} className="text-amber-500" />
+                <span>How to use on your phone or other computer:</span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Open <strong>My Luy</strong> on your other device, click <strong>Sync Cloud</strong>, and sign in with this same Google/Email account: <strong className="text-indigo-600 dark:text-indigo-400">{currentUser.email}</strong>. Any transaction you add on either device will automatically show up on the other!
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={onForceSync}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                <RefreshCw size={14} className={cloudSyncStatus === 'syncing' ? 'animate-spin' : ''} />
+                <span>Sync Now</span>
+              </button>
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={handleSignOut}
+                className="py-2.5 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+              >
+                <LogOut size={14} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* User is not signed in */
+          <div className="space-y-4">
+            {/* Explanatory Banner */}
+            <div className="p-3 rounded-2xl bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-emerald-500/10 border border-indigo-500/20 text-xs text-slate-700 dark:text-slate-300">
+              <p className="text-[11px] leading-relaxed">
+                Sign in on your <strong>phone</strong> and <strong>laptop</strong> with the same account. Any transaction or account you update will automatically sync across all your devices in real-time!
+              </p>
+            </div>
+
+            {/* One-Click Google Sign-In */}
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={handleGoogleSignIn}
+              className="w-full py-3 px-4 rounded-2xl bg-white dark:bg-[#0f132a] hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-300 dark:border-white/20 text-slate-800 dark:text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-3 shadow-sm active:scale-98 transition-all disabled:opacity-50"
+            >
+              {/* Google Colored G Icon */}
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>{isSubmitting ? 'Connecting...' : 'Continue with Google'}</span>
+            </button>
+
+            {/* Divider */}
+            <div className="relative flex items-center justify-center">
+              <div className="border-t border-slate-200 dark:border-white/10 w-full"></div>
+              <span className="bg-white dark:bg-[#181d38] px-3 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider relative">
+                Or Use Email
+              </span>
+            </div>
+
+            {/* Sign In vs Create Account Toggle */}
+            <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('signin');
+                  setErrorMsg(null);
+                }}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  authMode === 'signin'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAuthMode('signup');
+                  setErrorMsg(null);
+                }}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  authMode === 'signup'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Create Account
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {errorMsg && (
+              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+                <AlertCircle size={15} className="shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleEmailAuth} className="space-y-3">
+              {authMode === 'signup' && (
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    Your Name
+                  </label>
+                  <div className="relative">
+                    <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Heang"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/15 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm transition-all"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@gmail.com"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/15 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/15 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm transition-all"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogIn size={14} />
+                    <span>{authMode === 'signin' ? 'Sign In & Sync' : 'Create Account & Sync'}</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 

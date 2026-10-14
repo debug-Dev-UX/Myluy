@@ -1,5 +1,16 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "firebase/firestore";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  updateProfile
+} from "firebase/auth";
 
 export const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,6 +25,24 @@ export const firebaseConfig = {
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 
+// Initialize Firestore & Auth
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+
+export {
+  doc,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile
+};
+
 // Initialize Analytics if supported in the browser
 export const analytics =
   typeof window !== "undefined" && firebaseConfig.measurementId
@@ -21,3 +50,4 @@ export const analytics =
     : null;
 
 export default app;
+
