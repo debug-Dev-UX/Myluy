@@ -11,7 +11,7 @@ import {
   ShoppingBag, HeartPulse, Smartphone, Dumbbell, Plane, Film,
   GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift,
   CircleStop, Play, CalendarClock, Infinity as InfinityIcon,
-  ArrowDownLeft, History, Minus, Eye, EyeOff, Radio
+  ArrowDownLeft, History, Minus, Eye, EyeOff, Radio, Loader2
 } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
@@ -283,6 +283,13 @@ const dict = {
     darkMode: 'Dark Mode',
     lightMode: 'Light Mode',
     language: 'Language',
+    loadingVault: 'Securing Financial Vault...',
+    loadingSync: 'Synchronizing Accounts & Currencies...',
+    loadingReady: 'Financial System Ready',
+    loading: 'Loading...',
+    systemSynced: 'System Synchronized',
+    refreshData: 'Refresh & Sync Data',
+    previewLoadingScreen: 'Reload Splash Screen',
   },
   kh: {
     appName: 'My Luy',
@@ -548,6 +555,13 @@ const dict = {
     darkMode: 'ងងឹត',
     lightMode: 'ភ្លឺ',
     language: 'ភាសា',
+    loadingVault: 'កំពុងការពារទិន្នន័យហិរញ្ញវត្ថុ...',
+    loadingSync: 'កំពុងធ្វើសមកាលកម្មគណនី...',
+    loadingReady: 'ប្រព័ន្ធហិរញ្ញវត្ថុបានត្រៀមរួចរាល់',
+    loading: 'កំពុងដំណើរការ...',
+    systemSynced: 'ប្រព័ន្ធបានធ្វើសមកាលកម្មរួចរាល់',
+    refreshData: 'ធ្វើឱ្យស្រស់ & សមកាលកម្ម',
+    previewLoadingScreen: 'បើកអេក្រង់ផ្ទុកឡើងវិញ',
   },
 };
 
@@ -664,6 +678,13 @@ export default function App() {
   // Tabs: 'dashboard' | 'analytics' | 'budgets' | 'accounts' | 'recurring' | 'debt' | 'gamification'
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // App Boot Splash Loader & Navigation Loading States
+  const [isAppLoading, setIsAppLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(15);
+  const [loadingStatus, setLoadingStatus] = useState('Securing Financial Vault...');
+  const [isNavLoading, setIsNavLoading] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Pure Zero Data States (NO DEMO DATA PRE-LOADED - 100% CLEAN START FROM 0)
   const [accounts, setAccounts] = useState(() => loadLS('myluy_v3_accounts', DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 }))));
@@ -826,6 +847,82 @@ export default function App() {
   useEffect(() => saveLS('myluy_hide_bal', hideBalance), [hideBalance]);
 
   const t = dict[lang] || dict.en;
+
+  // App Boot Splash Loader Simulation
+  useEffect(() => {
+    setLoadingStatus(t.loadingVault || 'Securing Financial Vault...');
+    const t1 = setTimeout(() => {
+      setLoadingProgress(45);
+      setLoadingStatus(t.loadingSync || 'Synchronizing Accounts & Currencies...');
+    }, 300);
+
+    const t2 = setTimeout(() => {
+      setLoadingProgress(85);
+      setLoadingStatus(t.loadingReady || 'Financial System Ready');
+    }, 700);
+
+    const t3 = setTimeout(() => {
+      setLoadingProgress(100);
+    }, 1050);
+
+    const t4 = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 1350);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+    };
+  }, [t.loadingVault, t.loadingSync, t.loadingReady]);
+
+  // Responsive tab navigation with top nano loading bar
+  const handleTabChange = useCallback((tabId) => {
+    if (tabId === activeTab) {
+      setMobileMenuOpen(false);
+      return;
+    }
+    setIsNavLoading(true);
+    setActiveTab(tabId);
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+      setIsNavLoading(false);
+    }, 280);
+  }, [activeTab]);
+
+  // Quick refresh & loading feedback
+  const handleRefreshApp = useCallback(() => {
+    setIsSyncing(true);
+    setIsNavLoading(true);
+    setTimeout(() => {
+      setIsSyncing(false);
+      setIsNavLoading(false);
+      showToast(t.systemSynced || 'System Synchronized', 'success');
+    }, 450);
+  }, [showToast, t.systemSynced]);
+
+  // Manual trigger to preview splash screen from Settings
+  const handleRebootSplash = useCallback(() => {
+    setIsAppLoading(true);
+    setLoadingProgress(15);
+    setLoadingStatus(t.loadingVault || 'Securing Financial Vault...');
+    setTimeout(() => {
+      setLoadingProgress(50);
+      setLoadingStatus(t.loadingSync || 'Synchronizing Accounts & Currencies...');
+    }, 300);
+    setTimeout(() => {
+      setLoadingProgress(85);
+      setLoadingStatus(t.loadingReady || 'Financial System Ready');
+    }, 700);
+    setTimeout(() => {
+      setLoadingProgress(100);
+    }, 1050);
+    setTimeout(() => {
+      setIsAppLoading(false);
+    }, 1350);
+  }, [t.loadingVault, t.loadingSync, t.loadingReady]);
 
   // Real-time Currency Formatter
   const formatMoney = useCallback((amountInUSD, forceCurrency = null) => {
@@ -1306,6 +1403,81 @@ export default function App() {
   return (
     <div className={`min-h-screen bg-[var(--bg)] text-[var(--text-primary)] flex flex-col font-sans transition-colors duration-200 select-none`}>
       {/* ═══════════════════════════════════════════════════════════════
+          PREMIUM FINTECH APP BOOT LOADER & SPLASH SCREEN
+          ═══════════════════════════════════════════════════════════════ */}
+      <div
+        className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--bg)] transition-all duration-500 ${
+          isAppLoading ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none scale-105'
+        }`}
+        style={{ backdropFilter: 'blur(24px)' }}
+      >
+        {/* Ambient Glowing Blobs */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-gradient-to-tr from-indigo-500/25 via-purple-500/20 to-pink-500/20 blur-3xl pointer-events-none animate-pulse" />
+
+        <div className="relative flex flex-col items-center max-w-xs sm:max-w-sm px-6 text-center">
+          {/* Animated Ring & Logo */}
+          <div className="relative mb-6">
+            <div
+              className="w-24 h-24 rounded-3xl p-1 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 animate-spin"
+              style={{ animationDuration: '6s' }}
+            >
+              <div className="w-full h-full bg-[var(--bg)] rounded-[22px]" />
+            </div>
+
+            <div className="absolute inset-2 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-0.5 shadow-xl shadow-indigo-500/30 flex items-center justify-center overflow-hidden">
+              <div className="w-full h-full bg-[var(--surface)] rounded-[14px] flex items-center justify-center p-2.5">
+                <img src={logoImg} alt="My Luy" className="w-full h-full object-contain drop-shadow-md animate-pulse" />
+              </div>
+            </div>
+
+            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/50">
+              <Sparkles className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
+            </div>
+          </div>
+
+          {/* Brand Title */}
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+              {t.appName}
+            </h1>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+              PRO
+            </span>
+          </div>
+
+          <p className="text-xs text-[var(--text-muted)] font-medium mb-6">
+            {t.appSubtitle}
+          </p>
+
+          {/* Progress Bar Container */}
+          <div className="w-full bg-[var(--surface-hover)] h-2 rounded-full overflow-hidden p-0.5 border border-[var(--border)] shadow-inner mb-3">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300 ease-out shadow-sm shadow-indigo-500/50"
+              style={{ width: `${loadingProgress}%` }}
+            />
+          </div>
+
+          {/* Status info & percentage */}
+          <div className="w-full flex items-center justify-between text-[11px] font-medium text-[var(--text-muted)]">
+            <span className="flex items-center gap-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-500" />
+              <span>{loadingStatus}</span>
+            </span>
+            <span className="font-semibold text-[var(--text-secondary)] font-mono">{loadingProgress}%</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Nano Loading Bar for smooth micro-feedback */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-[60] h-[3px] bg-transparent overflow-hidden pointer-events-none transition-opacity duration-200 ${
+          isNavLoading ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <div className="h-full w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 nano-bar-animate shadow-sm shadow-indigo-500/50" />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
           TOP APP HEADER / NAVBAR (FULL RESPONSIVE & UNCLUTTERED)
           ═══════════════════════════════════════════════════════════════ */}
       <header
@@ -1351,7 +1523,7 @@ export default function App() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   active
                     ? 'bg-indigo-600/15 text-indigo-500 dark:text-indigo-400 shadow-sm'
@@ -1367,6 +1539,15 @@ export default function App() {
 
         {/* Controls: Responsive and Clean */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* Quick Refresh & Sync with Loading Feedback */}
+          <button
+            onClick={handleRefreshApp}
+            title={t.refreshData}
+            className="p-1.5 sm:p-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-secondary)] shadow-sm transition-all"
+          >
+            <RefreshCw size={16} className={isSyncing ? 'animate-spin text-indigo-500' : ''} />
+          </button>
+
           {/* Quick Currency Toggle Pill */}
           <button
             onClick={() => {
@@ -1477,10 +1658,7 @@ export default function App() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      setMobileMenuOpen(false);
-                    }}
+                    onClick={() => handleTabChange(tab.id)}
                     className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all ${
                       active
                         ? 'bg-indigo-600 text-white shadow-md'
@@ -1666,7 +1844,7 @@ export default function App() {
                 <span>{t.addTransaction}</span>
               </button>
               <button
-                onClick={() => setActiveTab('budgets')}
+                onClick={() => handleTabChange('budgets')}
                 className="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 text-xs font-bold transition-all shadow-sm active:scale-98"
               >
                 <Target size={16} />
@@ -1738,7 +1916,7 @@ export default function App() {
                 </div>
                 <div className="text-[11px] text-[var(--text-muted)] mt-1 flex items-center justify-between">
                   <span>{transactions.length} total txs</span>
-                  <button onClick={() => setActiveTab('accounts')} className="text-indigo-500 hover:underline text-[11px] font-semibold">
+                  <button onClick={() => handleTabChange('accounts')} className="text-indigo-500 hover:underline text-[11px] font-semibold">
                     View
                   </button>
                 </div>
@@ -1801,7 +1979,7 @@ export default function App() {
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('budgets')}
+                  onClick={() => handleTabChange('budgets')}
                   className="p-2 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                   title={t.budgetsGoalsTab}
                 >
@@ -3740,7 +3918,7 @@ export default function App() {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleTabChange(item.id)}
               className={`flex flex-col items-center justify-center gap-1 flex-1 py-1 transition-all ${
                 active ? 'text-indigo-600 dark:text-indigo-400 font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
               }`}
@@ -4032,6 +4210,7 @@ export default function App() {
           setCurrency={setCurrency}
           exchangeRate={exchangeRate}
           setExchangeRate={setExchangeRate}
+          onRebootSplash={handleRebootSplash}
           t={t}
         />
       )}
@@ -5265,6 +5444,7 @@ function SettingsModal({
   onResetZero,
   onOpenCategories,
   onInstallApp,
+  onRebootSplash,
   lang,
   setLang,
   theme,
@@ -5337,6 +5517,23 @@ function SettingsModal({
                 <span>{t.categoriesManagement}</span>
               </span>
               <ChevronRight size={14} className="text-[var(--text-muted)]" />
+            </button>
+          </div>
+
+          {/* Test / View Loading Splash Screen */}
+          <div className="pt-3">
+            <button
+              onClick={() => {
+                onClose();
+                onRebootSplash();
+              }}
+              className="w-full py-2 px-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-left flex items-center justify-between text-xs font-bold text-purple-600 dark:text-purple-400 shadow-sm"
+            >
+              <span className="flex items-center gap-2">
+                <RefreshCw size={15} />
+                <span>{t.previewLoadingScreen}</span>
+              </span>
+              <ChevronRight size={14} />
             </button>
           </div>
 

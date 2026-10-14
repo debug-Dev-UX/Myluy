@@ -694,3 +694,16 @@ button, a, input, select, textarea {
   .navbar-brand { font-size: 1rem; }
   .brand-icon { font-size: 1.2rem; }
 }
+
+/* ============================================================
+   NANO PROGRESS & LOADING ANIMATIONS
+   ============================================================ */
+@keyframes nanoProgress {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0%); }
+  100% { transform: translateX(100%); }
+}
+
+.nano-bar-animate {
+  animation: nanoProgress 0.75s infinite linear;
+}
