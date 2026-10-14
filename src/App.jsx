@@ -964,6 +964,13 @@ export default function App() {
     } catch (err) {
       console.warn('Firestore push error:', err);
       setCloudSyncStatus('error');
+      if (notify) {
+        if (err.code === 'permission-denied') {
+          showToast('Firebase rules blocked write! Enable rules in Firebase Console.', 'error');
+        } else {
+          showToast(`Sync error: ${err.message || err.code}`, 'error');
+        }
+      }
     }
   }, [
     accounts,
@@ -7272,16 +7279,44 @@ function AuthSyncModal({
                     {currentUser.email}
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </span>
-                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                      Cloud Connected & Live Synced
-                    </span>
+                    {cloudSyncStatus === 'error' ? (
+                      <>
+                        <AlertCircle size={13} className="text-rose-500 flex-shrink-0" />
+                        <span className="text-[11px] font-bold text-rose-500">
+                          Sync Error: Firestore Rules Blocked
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                          {cloudSyncStatus === 'syncing' ? 'Syncing with Cloud...' : 'Cloud Connected & Live Synced'}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {/* Error notice if Firestore rules are blocking */}
+              {cloudSyncStatus === 'error' && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs space-y-1">
+                  <div className="font-bold flex items-center gap-1.5">
+                    <AlertTriangle size={14} />
+                    <span>Firebase Firestore Rules need to be enabled:</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+                    In Firebase Console &gt; <strong>Firestore Database</strong> &gt; <strong>Rules</strong>, set:
+                    <code className="block bg-black/10 dark:bg-white/10 p-1.5 rounded my-1 font-mono text-[10px]">
+                      allow read, write: if true;
+                    </code>
+                    Then click <strong>Publish</strong> and tap <strong>Sync Now</strong> below.
+                  </p>
+                </div>
+              )}
 
               {/* Permanent Session Status */}
               <div className="pt-2 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300">
