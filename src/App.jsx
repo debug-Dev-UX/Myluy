@@ -11,7 +11,7 @@ import {
   ShoppingBag, HeartPulse, Smartphone, Dumbbell, Plane, Film,
   GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift,
   CircleStop, Play, CalendarClock, Infinity as InfinityIcon,
-  ArrowDownLeft, History, Minus, Eye, EyeOff, Radio, Loader2
+  ArrowDownLeft, History, Minus, Eye, EyeOff, Radio, Loader2, Copy
 } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
@@ -290,6 +290,24 @@ const dict = {
     systemSynced: 'System Synchronized',
     refreshData: 'Refresh & Sync Data',
     previewLoadingScreen: 'Reload Splash Screen',
+
+    // Real-Time Currency Exchange KHR - USD
+    currencyExchange: 'Real-Time Currency Exchange (KHR ⇄ USD)',
+    exchangeConverter: 'Live Currency Converter',
+    exchangeRateLabel: 'Exchange Rate',
+    rateNBC: 'NBC Official (4,080)',
+    rateMarket: 'Market Standard (4,100)',
+    rateBankBuy: 'Bank Buy (4,050)',
+    rateBankSell: 'Bank Sell (4,120)',
+    usdAmount: 'USD Amount ($)',
+    khrAmount: 'KHR Amount (៛)',
+    swapCurrencies: 'Swap Currencies',
+    copyConverted: 'Copy Amount',
+    amountCopied: 'Converted amount copied to clipboard',
+    livePreview: 'Live Converted',
+    quickPresets: 'Quick Amounts',
+    ratePerUSD: 'per $1 USD',
+    applyToTransaction: 'Add as Transaction',
   },
   kh: {
     appName: 'My Luy',
@@ -562,6 +580,24 @@ const dict = {
     systemSynced: 'ប្រព័ន្ធបានធ្វើសមកាលកម្មរួចរាល់',
     refreshData: 'ធ្វើឱ្យស្រស់ & សមកាលកម្ម',
     previewLoadingScreen: 'បើកអេក្រង់ផ្ទុកឡើងវិញ',
+
+    // Real-Time Currency Exchange KHR - USD
+    currencyExchange: 'ប្តូរប្រាក់តាមពេលវេលាជាក់ស្តែង (KHR ⇄ USD)',
+    exchangeConverter: 'កម្មវិធីគណនាប្តូរប្រាក់ភ្លាមៗ',
+    exchangeRateLabel: 'អត្រាប្តូរប្រាក់',
+    rateNBC: 'អត្រាធនាគារជាតិ (៤,០៨០)',
+    rateMarket: 'អត្រាទីផ្សារទូទៅ (៤,១០០)',
+    rateBankBuy: 'ធនាគារទិញចូល (៤,០៥០)',
+    rateBankSell: 'ធនាគារលក់ចេញ (៤,១២០)',
+    usdAmount: 'ចំនួនប្រាក់ដុល្លារ ($)',
+    khrAmount: 'ចំនួនប្រាក់រៀល (៛)',
+    swapCurrencies: 'ប្តូរទិសដៅរូបិយប័ណ្ណ',
+    copyConverted: 'ចម្លងទឹកប្រាក់',
+    amountCopied: 'បានចម្លងទឹកប្រាក់ដែលបានប្តូររួច',
+    livePreview: 'តម្លៃប្តូរភ្លាមៗ',
+    quickPresets: 'ចំនួនរហ័ស',
+    ratePerUSD: 'ក្នុង ១ ដុល្លារ',
+    applyToTransaction: 'បន្ថែមជាប្រតិបត្តិការ',
   },
 };
 
@@ -768,6 +804,7 @@ export default function App() {
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [installModalOpen, setInstallModalOpen] = useState(false);
+  const [exchangeModalOpen, setExchangeModalOpen] = useState(false);
 
   // Toast Notifications
   const [toast, setToast] = useState(null);
@@ -1562,6 +1599,17 @@ export default function App() {
             <span className="font-bold">{currency}</span>
           </button>
 
+          {/* Real-time Exchange Converter Quick Button */}
+          <button
+            onClick={() => setExchangeModalOpen(true)}
+            title={t.currencyExchange || 'Real-time KHR - USD Exchange'}
+            className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-sm transition-all active:scale-95"
+          >
+            <ArrowRightLeft size={13} className="text-indigo-500" />
+            <span className="hidden xs:inline text-[11px] font-medium text-slate-500 dark:text-slate-400">1$ ≈</span>
+            <span>{exchangeRate.toLocaleString()} ៛</span>
+          </button>
+
           {/* Language Toggle (Desktop view) */}
           <button
             onClick={() => setLang(lang === 'en' ? 'kh' : 'en')}
@@ -1922,6 +1970,13 @@ export default function App() {
                 </div>
               </div>
             </div>
+
+            {/* Real-time Currency Exchange Widget */}
+            <ExchangeCalculatorWidget
+              exchangeRate={exchangeRate}
+              onOpenModal={() => setExchangeModalOpen(true)}
+              t={t}
+            />
 
             {/* Direct Monthly Auto-Save Dashboard Glance Banner */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-[var(--surface)] via-[var(--surface)] to-teal-500/10 border border-teal-500/20 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -3964,6 +4019,7 @@ export default function App() {
           incomeCats={allIncomeCats}
           expenseCats={allExpenseCats}
           lang={lang}
+          exchangeRate={exchangeRate}
           t={t}
         />
       )}
@@ -3988,6 +4044,7 @@ export default function App() {
           editingBudget={editingBudget}
           expenseCats={allExpenseCats}
           lang={lang}
+          exchangeRate={exchangeRate}
           t={t}
         />
       )}
@@ -4010,6 +4067,7 @@ export default function App() {
             setGoalModalOpen(false);
           }}
           editingGoal={editingGoal}
+          exchangeRate={exchangeRate}
           t={t}
         />
       )}
@@ -4023,6 +4081,7 @@ export default function App() {
           onClose={() => setGoalFundModalOpen(false)}
           goal={selectedGoalForFund}
           actionType={fundActionType}
+          exchangeRate={exchangeRate}
           onConfirm={(delta) => {
             setSavingsGoals((prev) =>
               prev.map((g) => {
@@ -4059,6 +4118,7 @@ export default function App() {
             setAccountModalOpen(false);
           }}
           editingAccount={editingAccount}
+          exchangeRate={exchangeRate}
           t={t}
         />
       )}
@@ -4071,6 +4131,7 @@ export default function App() {
           open={transferModalOpen}
           onClose={() => setTransferModalOpen(false)}
           accounts={accounts}
+          exchangeRate={exchangeRate}
           onTransfer={({ fromId, toId, amount }) => {
             const num = parseFloat(amount) || 0;
             setAccounts((prev) =>
@@ -4107,6 +4168,7 @@ export default function App() {
           editingRecurring={editingRecurring}
           expenseCats={allExpenseCats}
           accounts={accounts}
+          exchangeRate={exchangeRate}
           t={t}
           lang={lang}
         />
@@ -4130,6 +4192,7 @@ export default function App() {
             setDebtModalOpen(false);
           }}
           editingDebt={editingDebt}
+          exchangeRate={exchangeRate}
           t={t}
         />
       )}
@@ -4142,6 +4205,7 @@ export default function App() {
           open={debtPayModalOpen}
           onClose={() => setDebtPayModalOpen(false)}
           debt={selectedDebtForPay}
+          exchangeRate={exchangeRate}
           onConfirm={(repaidAmount) => {
             setDebts((prev) =>
               prev.map((d) => {
@@ -4201,6 +4265,10 @@ export default function App() {
             setSettingsModalOpen(false);
             setCategoryModalOpen(true);
           }}
+          onOpenExchange={() => {
+            setSettingsModalOpen(false);
+            setExchangeModalOpen(true);
+          }}
           onInstallApp={handleInstallClick}
           lang={lang}
           setLang={setLang}
@@ -4236,6 +4304,7 @@ export default function App() {
           plan={autoSavePlan}
           onSave={handleSaveAutoSavePlan}
           accounts={accounts}
+          exchangeRate={exchangeRate}
           t={t}
         />
       )}
@@ -4250,6 +4319,7 @@ export default function App() {
           actionType={autoSaveActionType}
           plan={autoSavePlan}
           accounts={accounts}
+          exchangeRate={exchangeRate}
           onConfirm={handleAutoSaveFundAction}
           formatMoney={formatMoney}
           t={t}
@@ -4265,9 +4335,27 @@ export default function App() {
           onClose={() => setEditingAutoSaveHistory(null)}
           item={editingAutoSaveHistory}
           accounts={accounts}
+          exchangeRate={exchangeRate}
           onSave={handleEditAutoSaveHistory}
           formatMoney={formatMoney}
           t={t}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL 16: REAL-TIME KHR - USD EXCHANGE CONVERTER
+          ═══════════════════════════════════════════════════════════════ */}
+      {exchangeModalOpen && (
+        <ExchangeCalculatorModal
+          open={exchangeModalOpen}
+          onClose={() => setExchangeModalOpen(false)}
+          exchangeRate={exchangeRate}
+          setExchangeRate={setExchangeRate}
+          t={t}
+          onOpenTransaction={() => {
+            setExchangeModalOpen(false);
+            setTxModalOpen(true);
+          }}
         />
       )}
 
@@ -4291,7 +4379,7 @@ export default function App() {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: TRANSACTION MODAL
    ═══════════════════════════════════════════════════════════════ */
-function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCats, expenseCats, lang, t }) {
+function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCats, expenseCats, lang, exchangeRate, t }) {
   const [desc, setDesc] = useState(editingTx?.desc || '');
   const [amount, setAmount] = useState(editingTx?.amount || '');
   const [type, setType] = useState(editingTx?.type || 'expense');
@@ -4300,6 +4388,7 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
   const [date, setDate] = useState(editingTx?.date || new Date().toISOString().split('T')[0]);
 
   const activeCats = type === 'income' ? incomeCats : expenseCats;
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -4317,36 +4406,39 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl overflow-hidden animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="p-4 sm:p-5 border-b border-[var(--border)] flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${type === 'income' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'}`}>
-              {type === 'income' ? <ArrowUpRight size={17} /> : <ArrowDownRight size={17} />}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-5 sm:p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${type === 'income' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'}`}>
+              {type === 'income' ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
             </div>
-            <h3 className="font-bold text-sm sm:text-base text-[var(--text-primary)]">
-              {editingTx ? t.editTransaction : t.addTransaction}
-            </h3>
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                {editingTx ? t.editTransaction : t.addTransaction}
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Record income or expense accurately</p>
+            </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 max-h-[75vh] overflow-y-auto pr-0.5">
           {/* Income / Expense Toggle */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl">
+          <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 rounded-2xl">
             <button
               type="button"
               onClick={() => {
                 setType('expense');
                 setCategory(expenseCats[0]?.id);
               }}
-              className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                type === 'expense' ? 'bg-rose-600 text-white shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+              className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                type === 'expense' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <TrendingDown size={14} />
+              <TrendingDown size={15} />
               <span>{t.expense}</span>
             </button>
             <button
@@ -4355,20 +4447,27 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
                 setType('income');
                 setCategory(incomeCats[0]?.id);
               }}
-              className={`py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                type === 'income' ? 'bg-emerald-600 text-white shadow-sm' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+              className={`py-2 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all ${
+                type === 'income' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <TrendingUp size={14} />
+              <TrendingUp size={15} />
               <span>{t.income}</span>
             </button>
           </div>
 
-          {/* Amount input */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.amount}</label>
+          {/* Amount input & Live KHR conversion */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.amount} ($ USD)</label>
+              {amount && parseFloat(amount) > 0 && (
+                <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                  ≈ {Math.round(parseFloat(amount) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--text-muted)]">$</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 dark:text-slate-400">$</span>
               <input
                 type="number"
                 step="0.01"
@@ -4376,28 +4475,37 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder={t.amountPlaceholder}
-                className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm font-bold text-[var(--text-primary)] outline-none focus:border-indigo-500 shadow-sm"
+                placeholder="0.00"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
               />
             </div>
+            {amount && parseFloat(amount) > 0 && (
+              <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/40 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">
+                <span className="flex items-center gap-1">
+                  <ArrowRightLeft size={12} className="text-indigo-500" />
+                  <span>{t.khrAmount || 'KHR equivalent'}: {Math.round(parseFloat(amount) * currentRate).toLocaleString()} ៛</span>
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">Rate: 1$ = {currentRate.toLocaleString()} ៛</span>
+              </div>
+            )}
           </div>
 
           {/* Description */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.description}</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.description}</label>
             <input
               type="text"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               placeholder={t.descPlaceholder}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none focus:border-indigo-500 shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
           {/* Category Selector Grid */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.category}</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-36 overflow-y-auto pr-1">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.category}</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1">
               {activeCats.map((cat) => {
                 const isSelected = category === cat.id;
                 return (
@@ -4407,17 +4515,17 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
                     onClick={() => setCategory(cat.id)}
                     className={`p-2 rounded-xl border text-left flex items-center gap-2 transition-all ${
                       isSelected
-                        ? 'border-indigo-500 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold'
-                        : 'border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]'
+                        ? 'border-indigo-500 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold ring-2 ring-indigo-500/20'
+                        : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0f132a] text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'
                     }`}
                   >
                     <div
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-white"
+                      className="w-6 h-6 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm"
                       style={{ backgroundColor: cat.color }}
                     >
                       <DynamicIcon name={cat.icon} size={13} />
                     </div>
-                    <span className="text-[11px] truncate">{cat.name[lang] || cat.name.en}</span>
+                    <span className="text-[11px] font-semibold truncate text-slate-800 dark:text-slate-100">{cat.name[lang] || cat.name.en}</span>
                   </button>
                 );
               })}
@@ -4427,14 +4535,14 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
           {/* Account & Date selection */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.account}</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.account}</label>
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm"
               >
                 {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
+                  <option key={acc.id} value={acc.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {acc.name}
                   </option>
                 ))}
@@ -4442,28 +4550,28 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.date}</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.date}</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm"
               />
             </div>
           </div>
 
-          {/* Submit */}
-          <div className="flex items-center justify-end gap-2 pt-2">
+          {/* Submit & Cancel */}
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20"
+              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 active:scale-95 transition-all"
             >
               {editingTx ? t.update : t.submit}
             </button>
@@ -4477,9 +4585,10 @@ function TransactionModal({ open, onClose, onSave, editingTx, accounts, incomeCa
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: BUDGET LIMIT MODAL
    ═══════════════════════════════════════════════════════════════ */
-function BudgetLimitModal({ open, onClose, onSave, editingBudget, expenseCats, lang, t }) {
+function BudgetLimitModal({ open, onClose, onSave, editingBudget, expenseCats, lang, exchangeRate, t }) {
   const [categoryId, setCategoryId] = useState(editingBudget?.categoryId || expenseCats[0]?.id || '');
   const [limit, setLimit] = useState(editingBudget?.limit || '');
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -4493,35 +4602,45 @@ function BudgetLimitModal({ open, onClose, onSave, editingBudget, expenseCats, l
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">
-            {editingBudget ? t.editBudgetLimit : t.addBudgetLimit}
-          </h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+              {editingBudget ? t.editBudgetLimit : t.addBudgetLimit}
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Set monthly category spending limit</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.category}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.category}</label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm"
             >
               {expenseCats.map((cat) => (
-                <option key={cat.id} value={cat.id}>
+                <option key={cat.id} value={cat.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {cat.name[lang] || cat.name.en}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.monthlyLimit} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.monthlyLimit} ($ USD)</label>
+              {limit && parseFloat(limit) > 0 && (
+                <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                  ≈ {Math.round(parseFloat(limit) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <input
               type="number"
               step="1"
@@ -4530,21 +4649,21 @@ function BudgetLimitModal({ open, onClose, onSave, editingBudget, expenseCats, l
               value={limit}
               onChange={(e) => setLimit(e.target.value)}
               placeholder="e.g. 200"
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20"
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 active:scale-95 transition-all"
             >
               {t.save}
             </button>
@@ -4558,11 +4677,12 @@ function BudgetLimitModal({ open, onClose, onSave, editingBudget, expenseCats, l
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: SAVINGS GOAL MODAL
    ═══════════════════════════════════════════════════════════════ */
-function SavingsGoalModal({ open, onClose, onSave, editingGoal, t }) {
+function SavingsGoalModal({ open, onClose, onSave, editingGoal, exchangeRate, t }) {
   const [name, setName] = useState(editingGoal?.name || '');
   const [target, setTarget] = useState(editingGoal?.target || '');
   const [current, setCurrent] = useState(editingGoal?.current || 0);
   const [date, setDate] = useState(editingGoal?.date || '');
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -4578,32 +4698,42 @@ function SavingsGoalModal({ open, onClose, onSave, editingGoal, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">
-            {editingGoal ? t.editGoal : t.addGoal}
-          </h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+              {editingGoal ? t.editGoal : t.addGoal}
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Save for your dreams and milestones</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.goalName}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.goalName}</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t.goalNamePlaceholder}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.targetAmount} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.targetAmount} ($ USD)</label>
+              {target && parseFloat(target) > 0 && (
+                <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400">
+                  ≈ {Math.round(parseFloat(target) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <input
               type="number"
               step="1"
@@ -4612,12 +4742,19 @@ function SavingsGoalModal({ open, onClose, onSave, editingGoal, t }) {
               value={target}
               onChange={(e) => setTarget(e.target.value)}
               placeholder="e.g. 1500"
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.currentAmount} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.currentAmount} ($ USD)</label>
+              {current && parseFloat(current) > 0 ? (
+                <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400">
+                  ≈ {Math.round(parseFloat(current) * currentRate).toLocaleString()} ៛
+                </span>
+              ) : null}
+            </div>
             <input
               type="number"
               step="1"
@@ -4625,31 +4762,31 @@ function SavingsGoalModal({ open, onClose, onSave, editingGoal, t }) {
               value={current}
               onChange={(e) => setCurrent(e.target.value)}
               placeholder="e.g. 200"
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.targetDate}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.targetDate}</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)] hover:bg-[var(--surface-hover)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md shadow-purple-600/20"
+              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 active:scale-95 transition-all"
             >
               {t.save}
             </button>
@@ -4663,8 +4800,9 @@ function SavingsGoalModal({ open, onClose, onSave, editingGoal, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: GOAL FUND DEPOSIT/WITHDRAW MODAL
    ═══════════════════════════════════════════════════════════════ */
-function GoalFundModal({ open, onClose, goal, actionType, onConfirm, t }) {
+function GoalFundModal({ open, onClose, goal, actionType, exchangeRate, onConfirm, t }) {
   const [val, setVal] = useState('');
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -4676,15 +4814,30 @@ function GoalFundModal({ open, onClose, goal, actionType, onConfirm, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-bold text-sm text-[var(--text-primary)]">
-          {actionType === 'deposit' ? t.addFunds : t.withdrawFunds}: {goal.name}
-        </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+              {actionType === 'deposit' ? t.addFunds : t.withdrawFunds}: {goal.name}
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Update progress toward target</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
+            <X size={18} />
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.fundsAmount} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.fundsAmount} ($ USD)</label>
+              {val && parseFloat(val) > 0 && (
+                <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400">
+                  ≈ {Math.round(parseFloat(val) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <input
               type="number"
               step="0.01"
@@ -4693,21 +4846,21 @@ function GoalFundModal({ open, onClose, goal, actionType, onConfirm, t }) {
               value={val}
               onChange={(e) => setVal(e.target.value)}
               placeholder="0.00"
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm font-bold text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-1">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold"
+              className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 active:scale-95 transition-all"
             >
               {actionType === 'deposit' ? t.addFunds : t.withdrawFunds}
             </button>
@@ -4721,12 +4874,13 @@ function GoalFundModal({ open, onClose, goal, actionType, onConfirm, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: ACCOUNT CREATE / EDIT MODAL
    ═══════════════════════════════════════════════════════════════ */
-function AccountModal({ open, onClose, onSave, editingAccount, t }) {
+function AccountModal({ open, onClose, onSave, editingAccount, exchangeRate, t }) {
   const [name, setName] = useState(editingAccount?.name || '');
   const [type, setType] = useState(editingAccount?.type || 'bankAccount');
   const [balance, setBalance] = useState(editingAccount?.balance || 0);
   const [icon, setIcon] = useState(editingAccount?.icon || 'landmark');
   const [color, setColor] = useState(editingAccount?.color || '#06b6d4');
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -4743,93 +4897,103 @@ function AccountModal({ open, onClose, onSave, editingAccount, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">
-            {editingAccount ? t.editAccount : t.addAccount}
-          </h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+              {editingAccount ? t.editAccount : t.addAccount}
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Manage bank accounts and wallets</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.accountName}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.accountName}</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t.accountNamePlaceholder}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.accountType}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.accountType}</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm"
             >
-              <option value="bankAccount">{t.bankAccount}</option>
-              <option value="cashWallet">{t.cashWallet}</option>
-              <option value="digitalWallet">{t.digitalWallet}</option>
-              <option value="investmentVault">{t.investmentVault}</option>
+              <option value="bankAccount" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t.bankAccount}</option>
+              <option value="cashWallet" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t.cashWallet}</option>
+              <option value="digitalWallet" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t.digitalWallet}</option>
+              <option value="investmentVault" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t.investmentVault}</option>
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.initialBalance} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.initialBalance} ($ USD)</label>
+              {balance && parseFloat(balance) > 0 ? (
+                <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                  ≈ {Math.round(parseFloat(balance) * currentRate).toLocaleString()} ៛
+                </span>
+              ) : null}
+            </div>
             <input
               type="number"
               step="0.01"
               value={balance}
               onChange={(e) => setBalance(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">Icon & Color</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Icon & Color</label>
             <div className="flex items-center gap-2">
               {['landmark', 'wallet', 'credit-card', 'coins', 'piggy-bank'].map((ic) => (
                 <button
                   key={ic}
                   type="button"
                   onClick={() => setIcon(ic)}
-                  className={`p-2 rounded-xl border ${icon === ic ? 'border-indigo-500 bg-indigo-500/15' : 'border-[var(--border)]'}`}
+                  className={`p-2.5 rounded-xl border transition-all ${icon === ic ? 'border-indigo-500 bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 ring-2 ring-indigo-500/20' : 'border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'}`}
                 >
-                  <DynamicIcon name={ic} size={15} />
+                  <DynamicIcon name={ic} size={16} />
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-1.5 pt-1">
+            <div className="flex items-center gap-2 pt-1">
               {PALETTE.slice(0, 6).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
-                  className={`w-6 h-6 rounded-full border-2 ${color === c ? 'border-white scale-110' : 'border-transparent'}`}
+                  className={`w-6 h-6 rounded-full border-2 transition-transform ${color === c ? 'border-indigo-500 scale-125 shadow-md' : 'border-transparent hover:scale-110'}`}
                   style={{ backgroundColor: c }}
                 />
               ))}
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20"
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 active:scale-95 transition-all"
             >
               {t.save}
             </button>
@@ -4843,10 +5007,11 @@ function AccountModal({ open, onClose, onSave, editingAccount, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: TRANSFER MODAL
    ═══════════════════════════════════════════════════════════════ */
-function TransferModal({ open, onClose, accounts, onTransfer, t }) {
+function TransferModal({ open, onClose, accounts, exchangeRate, onTransfer, t }) {
   const [fromId, setFromId] = useState(accounts[0]?.id || '');
   const [toId, setToId] = useState(accounts[1]?.id || accounts[0]?.id || '');
   const [amount, setAmount] = useState('');
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -4857,48 +5022,58 @@ function TransferModal({ open, onClose, accounts, onTransfer, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">{t.transferFunds}</h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-cyan-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">{t.transferFunds}</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Instant transfer between accounts</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.transferFrom}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.transferFrom}</label>
             <select
               value={fromId}
               onChange={(e) => setFromId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500 shadow-sm"
             >
               {accounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>
+                <option key={acc.id} value={acc.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {acc.name} (${acc.balance})
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.transferTo}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.transferTo}</label>
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500 shadow-sm"
             >
               {accounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>
+                <option key={acc.id} value={acc.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {acc.name} (${acc.balance})
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.transferAmount} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.transferAmount} ($ USD)</label>
+              {amount && parseFloat(amount) > 0 && (
+                <span className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400">
+                  ≈ {Math.round(parseFloat(amount) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <input
               type="number"
               step="0.01"
@@ -4907,21 +5082,21 @@ function TransferModal({ open, onClose, accounts, onTransfer, t }) {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-sm font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 shadow-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md shadow-cyan-600/20"
+              className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-lg shadow-cyan-600/30 active:scale-95 transition-all"
             >
               {t.transferFunds}
             </button>
@@ -4935,13 +5110,14 @@ function TransferModal({ open, onClose, accounts, onTransfer, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: RECURRING BILL MODAL
    ═══════════════════════════════════════════════════════════════ */
-function RecurringModal({ open, onClose, onSave, editingRecurring, expenseCats, accounts, t, lang }) {
+function RecurringModal({ open, onClose, onSave, editingRecurring, expenseCats, accounts, exchangeRate, t, lang }) {
   const [desc, setDesc] = useState(editingRecurring?.desc || '');
   const [amount, setAmount] = useState(editingRecurring?.amount || '');
   const [freq, setFreq] = useState(editingRecurring?.freq || 'freqMonthly');
   const [category, setCategory] = useState(editingRecurring?.category || expenseCats[0]?.id || '');
   const [accountId, setAccountId] = useState(editingRecurring?.accountId || accounts[0]?.id || '');
   const [nextDate, setNextDate] = useState(editingRecurring?.nextDate || new Date().toISOString().split('T')[0]);
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -4960,33 +5136,43 @@ function RecurringModal({ open, onClose, onSave, editingRecurring, expenseCats, 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">
-            {editingRecurring ? t.editRecurring : t.addRecurring}
-          </h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-cyan-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+              {editingRecurring ? t.editRecurring : t.addRecurring}
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Automate recurring subscriptions & bills</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.description}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.description}</label>
             <input
               type="text"
               required
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               placeholder="e.g. Netflix Subscription"
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 shadow-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.amount} ($)</label>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.amount} ($)</label>
+                {amount && parseFloat(amount) > 0 && (
+                  <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">
+                    ≈ {Math.round(parseFloat(amount) * currentRate).toLocaleString()} ៛
+                  </span>
+                )}
+              </div>
               <input
                 type="number"
                 step="0.01"
@@ -4994,47 +5180,47 @@ function RecurringModal({ open, onClose, onSave, editingRecurring, expenseCats, 
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-500 shadow-sm"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.frequency}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.frequency}</label>
               <select
                 value={freq}
                 onChange={(e) => setFreq(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500 shadow-sm"
               >
-                <option value="freqWeekly">{t.freqWeekly}</option>
-                <option value="freqMonthly">{t.freqMonthly}</option>
-                <option value="freqYearly">{t.freqYearly}</option>
+                <option value="freqWeekly" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t.freqWeekly}</option>
+                <option value="freqMonthly" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t.freqMonthly}</option>
+                <option value="freqYearly" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">{t.freqYearly}</option>
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.category}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.category}</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500 shadow-sm"
               >
                 {expenseCats.map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {c.name[lang] || c.name.en}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.account}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.account}</label>
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="w-full px-2.5 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500 shadow-sm"
               >
                 {accounts.map((a) => (
-                  <option key={a.id} value={a.id}>
+                  <option key={a.id} value={a.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {a.name}
                   </option>
                 ))}
@@ -5042,27 +5228,27 @@ function RecurringModal({ open, onClose, onSave, editingRecurring, expenseCats, 
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.nextDueDate}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.nextDueDate}</label>
             <input
               type="date"
               value={nextDate}
               onChange={(e) => setNextDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-cyan-500 shadow-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md shadow-cyan-600/20"
+              className="px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-lg shadow-cyan-600/30 active:scale-95 transition-all"
             >
               {t.save}
             </button>
@@ -5076,13 +5262,14 @@ function RecurringModal({ open, onClose, onSave, editingRecurring, expenseCats, 
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: DEBT & LOAN MODAL
    ═══════════════════════════════════════════════════════════════ */
-function DebtModal({ open, onClose, onSave, editingDebt, t }) {
+function DebtModal({ open, onClose, onSave, editingDebt, exchangeRate, t }) {
   const [person, setPerson] = useState(editingDebt?.person || '');
   const [type, setType] = useState(editingDebt?.type || 'lent');
   const [total, setTotal] = useState(editingDebt?.total || '');
   const [paid, setPaid] = useState(editingDebt?.paid || 0);
   const [dueDate, setDueDate] = useState(editingDebt?.dueDate || '');
   const [notes, setNotes] = useState(editingDebt?.notes || '');
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -5100,24 +5287,27 @@ function DebtModal({ open, onClose, onSave, editingDebt, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">
-            {editingDebt ? t.editDebt : t.addDebt}
-          </h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-amber-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+              {editingDebt ? t.editDebt : t.addDebt}
+            </h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Track money lent to or borrowed from others</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl">
+          <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 rounded-2xl">
             <button
               type="button"
               onClick={() => setType('lent')}
-              className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                type === 'lent' ? 'bg-emerald-600 text-white shadow-sm' : 'text-[var(--text-muted)]'
+              className={`py-2 text-xs font-bold rounded-xl transition-all ${
+                type === 'lent' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {t.lentTab.split(' ')[0]}
@@ -5125,29 +5315,36 @@ function DebtModal({ open, onClose, onSave, editingDebt, t }) {
             <button
               type="button"
               onClick={() => setType('borrowed')}
-              className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                type === 'borrowed' ? 'bg-rose-600 text-white shadow-sm' : 'text-[var(--text-muted)]'
+              className={`py-2 text-xs font-bold rounded-xl transition-all ${
+                type === 'borrowed' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {t.borrowedTab.split(' ')[0]}
             </button>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.personName}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.personName}</label>
             <input
               type="text"
               required
               value={person}
               onChange={(e) => setPerson(e.target.value)}
               placeholder={t.personPlaceholder}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-amber-500 shadow-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.totalOwed} ($)</label>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.totalOwed} ($)</label>
+                {total && parseFloat(total) > 0 && (
+                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                    ≈ {Math.round(parseFloat(total) * currentRate).toLocaleString()} ៛
+                  </span>
+                )}
+              </div>
               <input
                 type="number"
                 step="0.01"
@@ -5156,11 +5353,11 @@ function DebtModal({ open, onClose, onSave, editingDebt, t }) {
                 value={total}
                 onChange={(e) => setTotal(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-amber-500 shadow-sm"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.amountPaid} ($)</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.amountPaid} ($)</label>
               <input
                 type="number"
                 step="0.01"
@@ -5168,43 +5365,43 @@ function DebtModal({ open, onClose, onSave, editingDebt, t }) {
                 value={paid}
                 onChange={(e) => setPaid(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-bold text-[var(--text-primary)] outline-none shadow-sm"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-amber-500 shadow-sm"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.dueDate}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.dueDate}</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-amber-500 shadow-sm"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.notes}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.notes}</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t.notesPlaceholder}
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-amber-500 shadow-sm"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md shadow-amber-600/20"
+              className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-lg shadow-amber-600/30 active:scale-95 transition-all"
             >
               {t.save}
             </button>
@@ -5218,9 +5415,10 @@ function DebtModal({ open, onClose, onSave, editingDebt, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: RECORD DEBT REPAYMENT MODAL
    ═══════════════════════════════════════════════════════════════ */
-function DebtPayModal({ open, onClose, debt, onConfirm, t }) {
-  const remaining = Math.max(0, debt.total - debt.paid);
+function DebtPayModal({ open, onClose, debt, exchangeRate, onConfirm, t }) {
+  const remaining = Math.max(0, (debt?.total || 0) - (debt?.paid || 0));
   const [val, setVal] = useState('');
+  const currentRate = exchangeRate || 4100;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -5229,21 +5427,38 @@ function DebtPayModal({ open, onClose, debt, onConfirm, t }) {
     onConfirm(num);
   };
 
-  if (!open) return null;
+  if (!open || !debt) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-bold text-sm text-[var(--text-primary)]">
-          {t.recordPayment}: {debt.person}
-        </h3>
-        <p className="text-xs text-[var(--text-muted)]">
-          {t.remainingDebt}: <strong>${remaining.toFixed(2)}</strong>
-        </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-amber-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+              {t.recordPayment}: {debt.person}
+            </h3>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {t.remainingDebt || t.remaining}: <strong className="text-amber-600 dark:text-amber-400">${remaining.toFixed(2)}</strong> (≈ {Math.round(remaining * currentRate).toLocaleString()} ៛)
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text-secondary)]">{t.paymentAmount} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.paymentAmount || t.amount} ($)</label>
+              {val && parseFloat(val) > 0 && (
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  ≈ {Math.round(parseFloat(val) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <input
               type="number"
               step="0.01"
@@ -5253,23 +5468,25 @@ function DebtPayModal({ open, onClose, debt, onConfirm, t }) {
               value={val}
               onChange={(e) => setVal(e.target.value)}
               placeholder="0.00"
-              className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--input-border)] text-sm font-bold text-[var(--text-primary)] outline-none shadow-sm"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-amber-500 shadow-sm"
+              autoFocus
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-1">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[var(--text-muted)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shadow-md shadow-amber-600/20"
+              disabled={!parseFloat(val) || parseFloat(val) <= 0}
+              className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-xs font-bold shadow-lg shadow-amber-600/30 active:scale-95 transition-all"
             >
-              {t.save}
+              {t.save || 'Save'}
             </button>
           </div>
         </form>
@@ -5279,7 +5496,7 @@ function DebtPayModal({ open, onClose, debt, onConfirm, t }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SUB-COMPONENT: ADMIN CATEGORY MANAGEMENT MODAL (NO EMOJIS)
+   SUB-COMPONENT: CATEGORY ADMIN MODAL
    ═══════════════════════════════════════════════════════════════ */
 function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCategory, onDeleteCategory, t, lang }) {
   const [tab, setTab] = useState('expense');
@@ -5305,22 +5522,29 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">{t.categoriesManagement}</h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
+              <Tag size={18} />
+            </div>
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">{t.categoriesManagement}</h3>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
             <X size={18} />
           </button>
         </div>
 
         {/* Tab switcher */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-[var(--surface-hover)] border border-[var(--border)] rounded-xl">
+        <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 rounded-2xl">
           <button
             type="button"
             onClick={() => setTab('expense')}
-            className={`py-2 text-xs font-bold rounded-lg transition-all ${
-              tab === 'expense' ? 'bg-rose-600 text-white shadow-sm' : 'text-[var(--text-muted)]'
+            className={`py-2 text-xs font-bold rounded-xl transition-all ${
+              tab === 'expense' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             {t.expenseCategories}
@@ -5328,8 +5552,8 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
           <button
             type="button"
             onClick={() => setTab('income')}
-            className={`py-2 text-xs font-bold rounded-lg transition-all ${
-              tab === 'income' ? 'bg-emerald-600 text-white shadow-sm' : 'text-[var(--text-muted)]'
+            className={`py-2 text-xs font-bold rounded-xl transition-all ${
+              tab === 'income' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             {t.incomeCategories}
@@ -5337,8 +5561,8 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
         </div>
 
         {/* Add Category Form */}
-        <form onSubmit={handleSubmit} className="p-3.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] space-y-3">
-          <h4 className="text-xs font-bold text-[var(--text-primary)]">{t.addCategory}</h4>
+        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 space-y-3">
+          <h4 className="text-xs font-bold text-slate-900 dark:text-white">{t.addCategory}</h4>
 
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -5347,27 +5571,27 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
               value={nameEn}
               onChange={(e) => setNameEn(e.target.value)}
               placeholder="Name (EN)"
-              className="px-2.5 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-[#181d38] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
             <input
               type="text"
               value={nameKh}
               onChange={(e) => setNameKh(e.target.value)}
               placeholder="ឈ្មោះ (KH)"
-              className="px-2.5 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text-primary)] outline-none shadow-sm"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-[#181d38] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-[11px] text-[var(--text-muted)] font-medium">Select Icon</label>
-            <div className="grid grid-cols-6 gap-1 max-h-24 overflow-y-auto pr-1">
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-slate-600 dark:text-slate-300 font-bold">Select Icon</label>
+            <div className="grid grid-cols-6 gap-1.5 max-h-24 overflow-y-auto pr-1">
               {AVAILABLE_ICONS.map((ic) => (
                 <button
                   key={ic}
                   type="button"
                   onClick={() => setIcon(ic)}
-                  className={`p-1.5 rounded-lg border flex items-center justify-center ${
-                    icon === ic ? 'border-indigo-500 bg-indigo-500/20 text-indigo-500' : 'border-[var(--border)] text-[var(--text-muted)]'
+                  className={`p-1.5 rounded-xl border flex items-center justify-center transition-all ${
+                    icon === ic ? 'border-indigo-500 bg-indigo-500/20 text-indigo-500' : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-slate-300'
                   }`}
                 >
                   <DynamicIcon name={ic} size={15} />
@@ -5376,13 +5600,13 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2 pt-1">
             {PALETTE.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(c)}
-                className={`w-5 h-5 rounded-full border-2 ${color === c ? 'border-white scale-110' : 'border-transparent'}`}
+                className={`w-6 h-6 rounded-full border-2 transition-all ${color === c ? 'border-indigo-500 scale-110 shadow-md' : 'border-transparent'}`}
                 style={{ backgroundColor: c }}
               />
             ))}
@@ -5390,7 +5614,7 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
 
           <button
             type="submit"
-            className="w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20"
+            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 active:scale-95 transition-all"
           >
             {t.addCategory}
           </button>
@@ -5398,32 +5622,32 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
 
         {/* Existing Custom Categories List */}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-[var(--text-secondary)]">Custom Categories</h4>
+          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">Custom Categories</h4>
           {(tab === 'income' ? incomeCats : expenseCats).length === 0 ? (
-            <p className="text-xs text-[var(--text-muted)]">No custom categories added yet.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">No custom categories added yet.</p>
           ) : (
             <div className="space-y-1.5">
               {(tab === 'income' ? incomeCats : expenseCats).map((cat) => (
                 <div
                   key={cat.id}
-                  className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <div
-                      className="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs shadow-sm"
                       style={{ backgroundColor: cat.color }}
                     >
-                      <DynamicIcon name={cat.icon} size={13} />
+                      <DynamicIcon name={cat.icon} size={14} />
                     </div>
-                    <span className="text-xs font-bold text-[var(--text-primary)]">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">
                       {cat.name[lang] || cat.name.en}
                     </span>
                   </div>
                   <button
                     onClick={() => onDeleteCategory(cat.id, tab)}
-                    className="p-1 text-[var(--text-muted)] hover:text-rose-500"
+                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ))}
@@ -5436,7 +5660,7 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SUB-COMPONENT: SETTINGS MODAL (NO DEMO DATA PRE-LOADS)
+   SUB-COMPONENT: SETTINGS MODAL
    ═══════════════════════════════════════════════════════════════ */
 function SettingsModal({
   open,
@@ -5458,29 +5682,34 @@ function SettingsModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <h3 className="font-bold text-base text-[var(--text-primary)]">{t.settingsTab}</h3>
-          <button onClick={onClose} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-white/15 shadow-2xl p-6 space-y-4 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
+              <Settings size={18} />
+            </div>
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">{t.settingsTab}</h3>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
             <X size={18} />
           </button>
         </div>
 
-        <div className="space-y-3 divide-y divide-[var(--border)] text-xs">
+        <div className="space-y-3.5 divide-y divide-slate-100 dark:divide-white/10 text-xs">
           {/* Language selection */}
           <div className="pt-2 flex items-center justify-between">
-            <span className="font-semibold text-[var(--text-secondary)]">{t.language}</span>
-            <div className="flex items-center gap-1">
+            <span className="font-bold text-slate-700 dark:text-slate-200">{t.language}</span>
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-[#0f132a] rounded-xl border border-slate-200 dark:border-white/10">
               <button
                 onClick={() => setLang('en')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all ${lang === 'en' ? 'bg-indigo-600 text-white' : 'bg-[var(--surface)] text-[var(--text-muted)]'}`}
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${lang === 'en' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 English
               </button>
               <button
                 onClick={() => setLang('kh')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all ${lang === 'kh' ? 'bg-indigo-600 text-white' : 'bg-[var(--surface)] text-[var(--text-muted)]'}`}
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${lang === 'kh' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 ភាសាខ្មែរ
               </button>
@@ -5489,20 +5718,37 @@ function SettingsModal({
 
           {/* Theme selection */}
           <div className="pt-3 flex items-center justify-between">
-            <span className="font-semibold text-[var(--text-secondary)]">Theme</span>
-            <div className="flex items-center gap-1">
+            <span className="font-bold text-slate-700 dark:text-slate-200">Theme</span>
+            <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-[#0f132a] rounded-xl border border-slate-200 dark:border-white/10">
               <button
                 onClick={() => setTheme('dark')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all ${theme === 'dark' ? 'bg-indigo-600 text-white' : 'bg-[var(--surface)] text-[var(--text-muted)]'}`}
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${theme === 'dark' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {t.darkMode}
               </button>
               <button
                 onClick={() => setTheme('light')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all ${theme === 'light' ? 'bg-indigo-600 text-white' : 'bg-[var(--surface)] text-[var(--text-muted)]'}`}
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${theme === 'light' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'}`}
               >
                 {t.lightMode}
               </button>
+            </div>
+          </div>
+
+          {/* Real-time Exchange Rate setting */}
+          <div className="pt-3 flex items-center justify-between">
+            <div>
+              <span className="font-bold text-slate-700 dark:text-slate-200 block">{t.realTimeExchange || 'Exchange Rate'}</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">1 USD = {exchangeRate?.toLocaleString() || 4100} KHR</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                value={exchangeRate || 4100}
+                onChange={(e) => setExchangeRate(Math.max(1, parseInt(e.target.value, 10) || 4100))}
+                className="w-20 px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white text-right outline-none focus:border-indigo-500 shadow-sm"
+              />
+              <span className="font-bold text-slate-500 dark:text-slate-400">៛</span>
             </div>
           </div>
 
@@ -5510,13 +5756,13 @@ function SettingsModal({
           <div className="pt-3">
             <button
               onClick={onOpenCategories}
-              className="w-full py-2 px-3 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-left flex items-center justify-between text-xs font-bold text-[var(--text-primary)] shadow-sm"
+              className="w-full py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-[#0f132a] hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-left flex items-center justify-between text-xs font-bold text-slate-900 dark:text-white shadow-sm transition-all"
             >
               <span className="flex items-center gap-2">
                 <Tag size={15} className="text-indigo-500" />
                 <span>{t.categoriesManagement}</span>
               </span>
-              <ChevronRight size={14} className="text-[var(--text-muted)]" />
+              <ChevronRight size={14} className="text-slate-400" />
             </button>
           </div>
 
@@ -5527,7 +5773,7 @@ function SettingsModal({
                 onClose();
                 onRebootSplash();
               }}
-              className="w-full py-2 px-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-left flex items-center justify-between text-xs font-bold text-purple-600 dark:text-purple-400 shadow-sm"
+              className="w-full py-2.5 px-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-left flex items-center justify-between text-xs font-bold text-purple-600 dark:text-purple-400 shadow-sm transition-all"
             >
               <span className="flex items-center gap-2">
                 <RefreshCw size={15} />
@@ -5544,7 +5790,7 @@ function SettingsModal({
                 onClose();
                 onInstallApp();
               }}
-              className="w-full py-2 px-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-left flex items-center justify-between text-xs font-bold text-indigo-600 dark:text-indigo-400 shadow-sm"
+              className="w-full py-2.5 px-3 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-left flex items-center justify-between text-xs font-bold text-indigo-600 dark:text-indigo-400 shadow-sm transition-all"
             >
               <span className="flex items-center gap-2">
                 <Download size={15} />
@@ -5558,7 +5804,7 @@ function SettingsModal({
           <div className="pt-3">
             <button
               onClick={onResetZero}
-              className="w-full py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center gap-2 shadow-sm"
+              className="w-full py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
             >
               <Trash2 size={15} />
               <span>{t.resetData}</span>
@@ -5577,31 +5823,31 @@ function InstallGuideModal({ open, onClose, t }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[var(--modal-bg)] rounded-3xl border border-[var(--border)] shadow-2xl p-6 space-y-4 animate-slide-up text-center" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-sm my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-white/15 shadow-2xl p-6 space-y-4 animate-slide-up text-center text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
         <div className="w-14 h-14 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-indigo-500 mx-auto flex items-center justify-center shadow-md">
           <img src={logoImg} alt="My Luy" className="w-10 h-10 object-contain rounded-xl" />
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-[var(--text-primary)]">{t.installApp}</h3>
-          <p className="text-xs text-[var(--text-muted)] mt-1">{t.installAppDesc}</p>
+          <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">{t.installApp}</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.installAppDesc}</p>
         </div>
 
-        <div className="space-y-2 text-left bg-[var(--input-bg)] p-3 rounded-xl border border-[var(--border)] text-xs text-[var(--text-secondary)] shadow-sm">
+        <div className="space-y-2.5 text-left bg-slate-50 dark:bg-[#0f132a] p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-300 shadow-sm">
           <p className="flex items-start gap-2">
-            <Share2 size={14} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+            <Share2 size={15} className="text-indigo-500 flex-shrink-0 mt-0.5" />
             <span>{t.installGuideSafari}</span>
           </p>
           <p className="flex items-start gap-2">
-            <Download size={14} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+            <Download size={15} className="text-emerald-500 flex-shrink-0 mt-0.5" />
             <span>{t.installGuideDesktop}</span>
           </p>
         </div>
 
         <button
           onClick={onClose}
-          className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20"
+          className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 active:scale-95 transition-all"
         >
           {t.cancel}
         </button>
@@ -5613,12 +5859,13 @@ function InstallGuideModal({ open, onClose, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: DIRECT MONTHLY AUTO-SAVE SETUP MODAL
    ═══════════════════════════════════════════════════════════════ */
-function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
+function AutoSaveModal({ open, onClose, plan, onSave, accounts, exchangeRate, t }) {
   const [title, setTitle] = useState(plan.title || 'Monthly Direct Stash');
   const [amount, setAmount] = useState(plan.amount || 50);
   const [startDate, setStartDate] = useState(plan.startDate || new Date().toISOString().split('T')[0]);
   const [dayOfMonth, setDayOfMonth] = useState(plan.dayOfMonth || 1);
   const [accountId, setAccountId] = useState(plan.accountId || accounts[0]?.id || '');
+  const currentRate = exchangeRate || 4100;
 
   if (!open) return null;
 
@@ -5634,52 +5881,52 @@ function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md bg-[var(--modal-bg)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-teal-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center">
               <CalendarClock size={18} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-[var(--text-primary)]">{t.configureAutoSave}</h3>
-              <p className="text-[11px] text-[var(--text-muted)]">{t.autoSavePerpetual}</p>
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">{t.configureAutoSave}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{t.autoSavePerpetual}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
           >
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.goalName}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.goalName}</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-teal-500 shadow-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.dayStart}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.dayStart}</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.dayOfMonth} (1-31)</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.dayOfMonth} (1-31)</label>
               <input
                 type="number"
                 min="1"
@@ -5687,14 +5934,21 @@ function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
                 value={dayOfMonth}
                 onChange={(e) => setDayOfMonth(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.monthlyAmount} ($)</label>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.monthlyAmount} ($)</label>
+                {amount && parseFloat(amount) > 0 && (
+                  <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">
+                    ≈ {Math.round(parseFloat(amount) * currentRate).toLocaleString()} ៛
+                  </span>
+                )}
+              </div>
               <input
                 type="number"
                 step="any"
@@ -5702,19 +5956,19 @@ function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.account}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.account}</label>
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               >
                 {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
+                  <option key={acc.id} value={acc.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {acc.name}
                   </option>
                 ))}
@@ -5722,17 +5976,17 @@ function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-md shadow-teal-600/20"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-lg shadow-teal-600/30 active:scale-95 transition-all"
             >
               {t.save}
             </button>
@@ -5746,7 +6000,7 @@ function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: DIRECT AUTO-SAVE FUND ACTION (DEPOSIT / WITHDRAW)
    ═══════════════════════════════════════════════════════════════ */
-function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, onConfirm, formatMoney, t }) {
+function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, exchangeRate, onConfirm, formatMoney, t }) {
   const isWithdraw = actionType === 'withdraw';
   const [amount, setAmount] = useState(
     isWithdraw
@@ -5756,6 +6010,7 @@ function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, onConfir
   const [accountId, setAccountId] = useState(plan.accountId || accounts[0]?.id || '');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
+  const currentRate = exchangeRate || 4100;
 
   if (!open) return null;
 
@@ -5773,9 +6028,9 @@ function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, onConfir
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md bg-[var(--modal-bg)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-teal-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-2.5">
             <div
               className={`w-9 h-9 rounded-xl flex items-center justify-center ${
@@ -5787,99 +6042,101 @@ function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, onConfir
               {isWithdraw ? <ArrowUpRight size={18} /> : <ArrowDownLeft size={18} />}
             </div>
             <div>
-              <h3 className="font-bold text-base text-[var(--text-primary)]">
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
                 {isWithdraw ? t.withdrawFromVault : t.depositToVault}
               </h3>
-              <p className="text-[11px] text-[var(--text-muted)]">
-                {t.totalAccumulated}: <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(plan.accumulated || 0)}</span>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                {t.totalAccumulated}: <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(plan.accumulated || 0)}</span> (≈ {Math.round((plan.accumulated || 0) * currentRate).toLocaleString()} ៛)
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
           >
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-              {isWithdraw ? t.withdrawAmount : t.depositAmount} ($)
-            </label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                {isWithdraw ? t.withdrawAmount : t.depositAmount} ($ USD)
+              </label>
+              {amount && parseFloat(amount) > 0 && (
+                <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">
+                  ≈ {Math.round(parseFloat(amount) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <input
               type="number"
               step="any"
               min="0.01"
-              max={isWithdraw ? (plan.accumulated || 0) : undefined}
+              max={isWithdraw ? (plan.accumulated || undefined) : undefined}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              placeholder="0.00"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-teal-500 shadow-sm"
+              autoFocus
             />
-            {isWithdraw && (
-              <p className="text-[11px] text-[var(--text-muted)] mt-1">
-                Max available: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatMoney(plan.accumulated || 0)}</span>
-              </p>
-            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
-                {isWithdraw ? t.transferTo : t.transferFrom}
-              </label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.account}</label>
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               >
                 {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
+                  <option key={acc.id} value={acc.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {acc.name}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.date}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.date}</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.note}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.note}</label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t.notePlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-teal-500 shadow-sm"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className={`px-5 py-2 rounded-xl text-xs font-bold text-white shadow-md ${
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-all ${
                 isWithdraw
-                  ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20'
-                  : 'bg-teal-600 hover:bg-teal-500 shadow-teal-600/20'
+                  ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/30'
+                  : 'bg-teal-600 hover:bg-teal-500 shadow-teal-600/30'
               }`}
             >
               {isWithdraw ? t.withdraw : t.deposit}
@@ -5894,12 +6151,13 @@ function AutoSaveFundModal({ open, onClose, actionType, plan, accounts, onConfir
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: EDIT AUTO-SAVE HISTORY RECORD MODAL
    ═══════════════════════════════════════════════════════════════ */
-function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, formatMoney, t }) {
+function AutoSaveHistoryEditModal({ open, onClose, item, accounts, exchangeRate, onSave, formatMoney, t }) {
   const [type, setType] = useState(item?.type || 'deposit');
   const [amount, setAmount] = useState(item?.amount || 0);
   const [accountId, setAccountId] = useState(item?.accountId || accounts[0]?.id || '');
   const [date, setDate] = useState(item?.date || new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState(item?.note || '');
+  const currentRate = exchangeRate || 4100;
 
   if (!open || !item) return null;
 
@@ -5918,29 +6176,29 @@ function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, forma
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-fade-in" onClick={onClose}>
-      <div className="w-full max-w-md bg-[var(--modal-bg)] border border-[var(--border)] rounded-3xl p-6 shadow-2xl space-y-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-teal-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center">
               <Pencil size={18} />
             </div>
             <div>
-              <h3 className="font-bold text-base text-[var(--text-primary)]">{t.editHistoryItem}</h3>
-              <p className="text-[11px] text-[var(--text-muted)]">{item.date} • {item.accountName}</p>
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">{t.editHistoryItem}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{item.date} • {item.accountName}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
           >
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.type}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.type}</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -5948,7 +6206,7 @@ function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, forma
                 className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
                   type === 'deposit'
                     ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 shadow-sm'
-                    : 'bg-[var(--input-bg)] border-[var(--border)] text-[var(--text-secondary)]'
+                    : 'bg-slate-50 dark:bg-[#0f132a] border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
                 }`}
               >
                 <ArrowDownLeft size={14} />
@@ -5960,7 +6218,7 @@ function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, forma
                 className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all ${
                   type === 'withdraw'
                     ? 'bg-amber-500/15 border-amber-500 text-amber-600 dark:text-amber-400 shadow-sm'
-                    : 'bg-[var(--input-bg)] border-[var(--border)] text-[var(--text-secondary)]'
+                    : 'bg-slate-50 dark:bg-[#0f132a] border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
                 }`}
               >
                 <ArrowUpRight size={14} />
@@ -5969,8 +6227,15 @@ function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, forma
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.amount} ($)</label>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.amount} ($)</label>
+              {amount && parseFloat(amount) > 0 && (
+                <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">
+                  ≈ {Math.round(parseFloat(amount) * currentRate).toLocaleString()} ៛
+                </span>
+              )}
+            </div>
             <input
               type="number"
               step="any"
@@ -5978,60 +6243,60 @@ function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, forma
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.account}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.account}</label>
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               >
                 {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
+                  <option key={acc.id} value={acc.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {acc.name}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.date}</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.date}</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className="w-full px-3 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-teal-500 shadow-sm"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.note}</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">{t.note}</label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder={t.notePlaceholder}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-teal-500 shadow-sm"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-md shadow-teal-600/20"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-lg shadow-teal-600/30 active:scale-95 transition-all"
             >
               {t.save}
             </button>
@@ -6042,4 +6307,305 @@ function AutoSaveHistoryEditModal({ open, onClose, item, accounts, onSave, forma
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SUB-COMPONENT: REAL-TIME KHR - USD EXCHANGE CALCULATOR MODAL
+   ═══════════════════════════════════════════════════════════════ */
+function ExchangeCalculatorModal({ open, onClose, exchangeRate, setExchangeRate, t, onOpenTransaction }) {
+  // conversion mode: 'USD_TO_KHR' | 'KHR_TO_USD'
+  const [direction, setDirection] = useState('USD_TO_KHR');
+  const [inputVal, setInputVal] = useState('10');
+  const [customRate, setCustomRate] = useState(exchangeRate || 4100);
+  const [isCopied, setIsCopied] = useState(false);
+
+  // Standard Cambodian Market & National Bank Rate Presets
+  const PRESET_RATES = [
+    { label: 'NBC Official', rate: 4050 },
+    { label: 'Bank Buy', rate: 4080 },
+    { label: 'Market Standard', rate: 4100 },
+    { label: 'Bank Sell', rate: 4120 },
+  ];
+
+  const numVal = parseFloat(inputVal) || 0;
+  const activeRate = customRate > 0 ? customRate : (exchangeRate || 4100);
+
+  const convertedResult = useMemo(() => {
+    if (direction === 'USD_TO_KHR') {
+      return Math.round(numVal * activeRate);
+    } else {
+      return activeRate > 0 ? (numVal / activeRate).toFixed(2) : '0.00';
+    }
+  }, [direction, numVal, activeRate]);
+
+  const handleCopy = () => {
+    try {
+      const text = direction === 'USD_TO_KHR' ? `${convertedResult.toLocaleString()} ៛` : `$${convertedResult}`;
+      navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {}
+  };
+
+  const handleSwap = () => {
+    setDirection((prev) => (prev === 'USD_TO_KHR' ? 'KHR_TO_USD' : 'USD_TO_KHR'));
+    if (direction === 'USD_TO_KHR') {
+      setInputVal(String(convertedResult));
+    } else {
+      setInputVal(String(Math.round(parseFloat(convertedResult) || 10)));
+    }
+  };
+
+  const handleApplyPreset = (rate) => {
+    setCustomRate(rate);
+    setExchangeRate(rate);
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
+      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-6 space-y-4 sm:space-y-5 animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center shadow-sm">
+              <Coins size={20} />
+            </div>
+            <div>
+              <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                <span>{t.realTimeExchange || 'Exchange Rate'}</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  LIVE
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                USD ($) ⇄ KHR (៛) Cambodian Riel
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Direction Switcher Banner */}
+        <div className="flex items-center justify-between p-2 rounded-2xl bg-slate-100 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 pl-2">
+            {direction === 'USD_TO_KHR' ? (
+              <span className="flex items-center gap-1.5">
+                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">USD ($)</span>
+                <span>➔</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">KHR (៛)</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">KHR (៛)</span>
+                <span>➔</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">USD ($)</span>
+              </span>
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={handleSwap}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#181d38] border border-slate-200 dark:border-white/15 text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-sm active:scale-95 transition-all"
+          >
+            <ArrowRightLeft size={13} />
+            <span>{t.switchDirection || 'Swap'}</span>
+          </button>
+        </div>
+
+        {/* Input Box */}
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between">
+            <span>{direction === 'USD_TO_KHR' ? (t.amountInUSD || 'Amount in USD ($)') : (t.amountInKHR || 'Amount in KHR (៛)')}</span>
+            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              {direction === 'USD_TO_KHR' ? '$ Dollar' : '៛ Khmer Riel'}
+            </span>
+          </label>
+          <div className="relative">
+            <input
+              type="number"
+              step="any"
+              min="0"
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              placeholder="0"
+              className="w-full pl-4 pr-16 py-3 rounded-2xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-lg sm:text-xl font-black text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 shadow-sm transition-all"
+              autoFocus
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-extrabold text-slate-400 dark:text-slate-500">
+              {direction === 'USD_TO_KHR' ? 'USD' : 'KHR'}
+            </span>
+          </div>
+        </div>
+
+        {/* Result Card */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-emerald-500/10 border border-indigo-500/20 dark:border-indigo-400/20 shadow-inner space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+            <span>{t.convertedAmount || 'Converted Total'}</span>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/75 dark:bg-white/10 hover:bg-white text-slate-700 dark:text-slate-200 text-[11px] font-bold shadow-xs active:scale-95 transition-all"
+            >
+              <Copy size={12} />
+              <span>{isCopied ? (t.copied || 'Copied!') : (t.copy || 'Copy')}</span>
+            </button>
+          </div>
+          <div className="flex items-baseline gap-2">
+            <div className="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight">
+              {direction === 'USD_TO_KHR'
+                ? `${convertedResult.toLocaleString()} ៛`
+                : `$${convertedResult}`}
+            </div>
+          </div>
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between">
+            <span>Active Rate: 1 USD = {activeRate.toLocaleString()} KHR</span>
+            <span>{direction === 'USD_TO_KHR' ? `1 KHR ≈ $${(1 / activeRate).toFixed(6)} USD` : `1 USD = ${activeRate.toLocaleString()} KHR`}</span>
+          </div>
+        </div>
+
+        {/* Quick Presets for Cambodia */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200">
+              {t.cambodiaRatePresets || 'Cambodia Market Rates'}
+            </label>
+            <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">1$ = {activeRate.toLocaleString()}៛</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {PRESET_RATES.map((p) => {
+              const isActive = activeRate === p.rate;
+              return (
+                <button
+                  key={p.rate}
+                  type="button"
+                  onClick={() => handleApplyPreset(p.rate)}
+                  className={`p-2 rounded-xl text-left border transition-all ${
+                    isActive
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/25'
+                      : 'bg-slate-50 dark:bg-[#0f132a] border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-white/20'
+                  }`}
+                >
+                  <div className="text-[10px] font-medium opacity-80 truncate">{p.label}</div>
+                  <div className="text-xs font-black">{p.rate.toLocaleString()} ៛</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Custom Rate Input */}
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10">
+          <div className="space-y-0.5">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 block">
+              {t.customRate || 'Custom Exchange Rate'}
+            </span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">Edit to your preferred money changer rate</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="number"
+              value={customRate}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10) || 0;
+                setCustomRate(val);
+                if (val > 0) setExchangeRate(val);
+              }}
+              className="w-24 px-2.5 py-1.5 rounded-xl bg-white dark:bg-[#181d38] border border-slate-300 dark:border-white/20 text-xs font-black text-slate-900 dark:text-white text-right outline-none focus:border-indigo-500 shadow-sm"
+            />
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">៛</span>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-white/10">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all"
+          >
+            {t.cancel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SUB-COMPONENT: DASHBOARD REAL-TIME EXCHANGE RATE WIDGET
+   ═══════════════════════════════════════════════════════════════ */
+function ExchangeCalculatorWidget({ exchangeRate, onOpenModal, t }) {
+  const [usdInput, setUsdInput] = useState('10');
+  const rate = exchangeRate || 4100;
+  const numUSD = parseFloat(usdInput) || 0;
+  const khrResult = Math.round(numUSD * rate);
+
+  return (
+    <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#181d38] border border-slate-200 dark:border-indigo-500/20 shadow-sm space-y-3 text-slate-900 dark:text-white">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center shadow-sm">
+            <Coins size={18} />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>{t.realTimeExchange || 'Exchange Rate'}</span>
+              <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                1$ = {rate.toLocaleString()}៛
+              </span>
+            </h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+              Cambodia Real-Time Money Converter
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={onOpenModal}
+          className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 hover:bg-indigo-100 dark:hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-bold flex items-center gap-1.5 active:scale-95 transition-all"
+        >
+          <ArrowRightLeft size={13} />
+          <span>Full Converter</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+        <div className="relative">
+          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
+            USD Amount ($)
+          </label>
+          <div className="relative">
+            <input
+              type="number"
+              step="any"
+              min="0"
+              value={usdInput}
+              onChange={(e) => setUsdInput(e.target.value)}
+              placeholder="10"
+              className="w-full pl-3 pr-10 py-2 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-300 dark:border-white/20 text-sm font-black text-slate-900 dark:text-white outline-none focus:border-indigo-500 shadow-sm"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">$</span>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1">
+            Cambodian Riel (៛)
+          </label>
+          <div className="px-3 py-2 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-between">
+            <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">
+              {khrResult.toLocaleString()} ៛
+            </span>
+            <span className="text-[11px] font-bold text-slate-400">KHR</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
