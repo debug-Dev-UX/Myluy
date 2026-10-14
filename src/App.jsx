@@ -9,7 +9,8 @@ import {
   Award, Sparkles, AlertTriangle, AlertCircle, CheckCircle2, ChevronRight,
   Clock, Coins, Briefcase, Laptop, Utensils, Car, Home, Zap,
   ShoppingBag, HeartPulse, Smartphone, Dumbbell, Plane, Film,
-  GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift
+  GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift,
+  CircleStop, Play, CalendarClock, Infinity as InfinityIcon
 } from 'lucide-react';
 import logoImg from './assets/logo.png';
 
@@ -116,6 +117,30 @@ const dict = {
     daysLeft: 'days remaining',
     emptyGoals: 'No savings goals created yet',
     emptyGoalsSub: 'Define your dreams and watch your money grow',
+
+    // Direct Monthly Auto-Save (Non-Stop)
+    directAutoSave: 'Direct Monthly Auto-Save (Non-Stop)',
+    directAutoSaveSub: 'Continuous monthly stash without end date. One single button to stop or resume anytime.',
+    autoSaveRunning: 'NON-STOP ACTIVE',
+    autoSaveStopped: 'STOPPED',
+    dayStart: 'Day Start',
+    dayOfMonth: 'Execution Day',
+    dayOfMonthSub: 'Day of every month',
+    dayPrefix: 'Day',
+    daySuffix: '',
+    monthlyAmount: 'Monthly Deposit',
+    totalAccumulated: 'Total Accumulated Saved',
+    stopAutoSave: 'Stop Auto-Save',
+    resumeAutoSave: 'Resume Non-Stop Auto-Save',
+    editAutoSave: 'Configure Auto-Save Plan',
+    configureAutoSave: 'Configure Non-Stop Auto-Save',
+    depositNow: 'Deposit This Month Now',
+    depositSuccess: 'Monthly auto-save deposit recorded successfully!',
+    autoSaveStoppedMsg: 'Monthly auto-save stopped.',
+    autoSaveResumedMsg: 'Monthly auto-save running non-stop!',
+    autoSavePerpetual: 'Perpetual / No Stop',
+    totalSavedSoFar: 'Stored in secure vault',
+    directVault: 'Direct Vault',
 
     // Accounts & Currencies
     accountsList: 'Your Accounts & Wallets',
@@ -329,6 +354,30 @@ const dict = {
     daysLeft: 'ថ្ងៃនៅសល់',
     emptyGoals: 'មិនទាន់មានគោលដៅសន្សំនៅឡើយទេ',
     emptyGoalsSub: 'កំណត់គោលដៅដើម្បីសន្សំប្រាក់សម្រាប់អនាគត',
+
+    // Direct Monthly Auto-Save (Non-Stop)
+    directAutoSave: 'ការសន្សំប្រាក់ប្រចាំខែឥតឈប់',
+    directAutoSaveSub: 'សន្សំប្រាក់ដោយស្វ័យប្រវត្តិកំណត់រៀងរាល់ខែឥតឈប់។ មានប៊ូតុងមួយសម្រាប់បញ្ឈប់គ្រប់ពេល។',
+    autoSaveRunning: 'ដំណើរការឥតឈប់',
+    autoSaveStopped: 'បានបញ្ឈប់',
+    dayStart: 'ថ្ងៃចាប់ផ្តើម',
+    dayOfMonth: 'ថ្ងៃត្រូវសន្សំរាល់ខែ',
+    dayOfMonthSub: 'ថ្ងៃទីក្នុងខែនីមួយៗ',
+    dayPrefix: 'ថ្ងៃទី',
+    daySuffix: '',
+    monthlyAmount: 'ចំនួនសន្សំប្រចាំខែ',
+    totalAccumulated: 'លុយសរុបដែលបានសន្សំ',
+    stopAutoSave: 'បញ្ឈប់ការសន្សំ (Stop)',
+    resumeAutoSave: 'បន្តការសន្សំឥតឈប់ (Resume)',
+    editAutoSave: 'កំណត់គម្រោងសន្សំ',
+    configureAutoSave: 'កំណត់ការសន្សំប្រចាំខែឥតឈប់',
+    depositNow: 'ដាក់សន្សំខែនេះឥឡូវ',
+    depositSuccess: 'បានកត់ត្រាការសន្សំប្រចាំខែដោយជោគជ័យ!',
+    autoSaveStoppedMsg: 'បានបញ្ឈប់ការសន្សំប្រចាំខែហើយ។',
+    autoSaveResumedMsg: 'ការសន្សំប្រចាំខែដំណើរការឥតឈប់ឡើងវិញ!',
+    autoSavePerpetual: 'រហូត / គ្មានពេលកំណត់',
+    totalSavedSoFar: 'រក្សាទុកក្នុងទូរសន្សំ',
+    directVault: 'ទូរសន្សំផ្ទាល់',
 
     // Accounts & Currencies
     accountsList: 'គណនី និងកាបូបលុយរបស់អ្នក',
@@ -569,6 +618,20 @@ export default function App() {
   const [recurringTxs, setRecurringTxs] = useState(() => loadLS('myluy_recurring', []));
   const [debts, setDebts] = useState(() => loadLS('myluy_debts', []));
 
+  // Direct Monthly Auto-Save (Non-Stop)
+  const [autoSavePlan, setAutoSavePlan] = useState(() => loadLS('myluy_autosave', {
+    id: 'autosave_main',
+    title: 'Monthly Direct Stash',
+    amount: 50,
+    dayOfMonth: 1, // 'day'
+    startDate: new Date().toISOString().split('T')[0], // 'day start'
+    accountId: 'acc_aba',
+    isActive: true,
+    accumulated: 0,
+    lastExecutedMonth: null,
+    history: [],
+  }));
+
   // Gamification & Streaks
   const [userXp, setUserXp] = useState(() => loadLS('myluy_xp', 0));
   const [streakDays, setStreakDays] = useState(() => loadLS('myluy_streak', 1));
@@ -590,6 +653,8 @@ export default function App() {
 
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
+
+  const [autoSaveModalOpen, setAutoSaveModalOpen] = useState(false);
 
   const [goalFundModalOpen, setGoalFundModalOpen] = useState(false);
   const [selectedGoalForFund, setSelectedGoalForFund] = useState(null);
@@ -686,6 +751,7 @@ export default function App() {
   useEffect(() => saveLS('myluy_streak', streakDays), [streakDays]);
   useEffect(() => saveLS('myluy_c52', completed52Weeks), [completed52Weeks]);
   useEffect(() => saveLS('myluy_c30', completed30Days), [completed30Days]);
+  useEffect(() => saveLS('myluy_autosave', autoSavePlan), [autoSavePlan]);
 
   const t = dict[lang] || dict.en;
 
@@ -896,10 +962,75 @@ export default function App() {
       setStreakDays(1);
       setCompleted52Weeks([]);
       setCompleted30Days([]);
+      setAutoSavePlan({
+        id: 'autosave_main',
+        title: 'Monthly Direct Stash',
+        amount: 50,
+        dayOfMonth: 1,
+        startDate: new Date().toISOString().split('T')[0],
+        accountId: 'acc_aba',
+        isActive: true,
+        accumulated: 0,
+        lastExecutedMonth: null,
+        history: [],
+      });
       setAccounts(DEFAULT_ACCOUNTS.map((a) => ({ ...a, balance: 0 })));
       showToast('All data reset to 0.', 'success');
       setSettingsModalOpen(false);
     }
+  };
+
+  // Direct Monthly Auto-Save handlers
+  const handleToggleAutoSave = () => {
+    setAutoSavePlan((prev) => {
+      const nextActive = !prev.isActive;
+      showToast(nextActive ? t.autoSaveResumedMsg : t.autoSaveStoppedMsg, nextActive ? 'success' : 'info');
+      return { ...prev, isActive: nextActive };
+    });
+  };
+
+  const handleTriggerAutoSaveDeposit = () => {
+    const amt = Number(autoSavePlan.amount) || 0;
+    if (amt <= 0) return;
+    const nowStr = new Date().toISOString().split('T')[0];
+    const currentYearMonth = nowStr.substring(0, 7);
+    const targetAccId = autoSavePlan.accountId || accounts[0]?.id || '';
+    const accName = accounts.find((a) => a.id === targetAccId)?.name || 'Direct Vault';
+
+    const newTx = {
+      id: 'tx_as_' + Date.now(),
+      desc: `Auto-Save: ${autoSavePlan.title || 'Monthly Stash'}`,
+      amount: amt,
+      type: 'expense',
+      category: 'savings',
+      accountId: targetAccId,
+      date: nowStr,
+    };
+
+    setTransactions((prev) => [newTx, ...prev]);
+    if (targetAccId) {
+      setAccounts((prev) =>
+        prev.map((a) => (a.id === targetAccId ? { ...a, balance: Math.max(0, (Number(a.balance) || 0) - amt) } : a))
+      );
+    }
+
+    setAutoSavePlan((prev) => ({
+      ...prev,
+      accumulated: (Number(prev.accumulated) || 0) + amt,
+      lastExecutedMonth: currentYearMonth,
+      history: [
+        { id: 'ash_' + Date.now(), date: nowStr, amount: amt, accountName: accName },
+        ...(prev.history || []),
+      ],
+    }));
+
+    showToast(t.depositSuccess, 'success');
+  };
+
+  const handleSaveAutoSavePlan = (updatedPlan) => {
+    setAutoSavePlan((prev) => ({ ...prev, ...updatedPlan }));
+    setAutoSaveModalOpen(false);
+    showToast(t.update, 'success');
   };
 
   return (
@@ -1273,6 +1404,71 @@ export default function App() {
                 <Download size={16} />
                 <span>{t.export}</span>
               </button>
+            </div>
+
+            {/* Direct Monthly Auto-Save Dashboard Glance Banner */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-[var(--surface)] via-[var(--surface)] to-teal-500/10 border border-teal-500/20 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20 shrink-0">
+                  <CalendarClock size={20} />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-bold text-sm text-[var(--text-primary)] truncate">{t.directAutoSave}</span>
+                    {autoSavePlan.isActive ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        {t.autoSaveRunning}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30 shrink-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                        {t.autoSaveStopped}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">
+                    {t.dayStart}: <span className="font-semibold text-[var(--text-secondary)]">{autoSavePlan.startDate || 'Today'}</span> • {t.dayOfMonth}: <span className="font-semibold text-[var(--text-secondary)]">{t.dayPrefix} {autoSavePlan.dayOfMonth}</span> • {formatMoney(autoSavePlan.amount)}/mo
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 justify-end">
+                <div className="text-right hidden md:block mr-2">
+                  <span className="text-[10px] font-medium text-[var(--text-muted)] block">{t.totalAccumulated}</span>
+                  <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">{formatMoney(autoSavePlan.accumulated || 0)}</span>
+                </div>
+
+                {/* THE SINGLE BUTTON FOR STOP / RESUME */}
+                <button
+                  onClick={handleToggleAutoSave}
+                  className={`flex-1 sm:flex-initial py-2 px-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm ${
+                    autoSavePlan.isActive
+                      ? 'bg-rose-500/15 hover:bg-rose-500 text-rose-600 dark:text-rose-400 hover:text-white border border-rose-500/30'
+                      : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20'
+                  }`}
+                >
+                  {autoSavePlan.isActive ? (
+                    <>
+                      <CircleStop size={14} className="animate-pulse" />
+                      <span>{t.stopAutoSave}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play size={14} />
+                      <span>{t.resumeAutoSave}</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('budgets')}
+                  className="p-2 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  title={t.budgetsGoalsTab}
+                >
+                  <ChevronRight size={15} />
+                </button>
+              </div>
             </div>
 
             {/* Transactions Section with Filters, Search, and Sort */}
@@ -1752,7 +1948,112 @@ export default function App() {
               )}
             </div>
 
-            {/* Section 2: Savings Goals */}
+            {/* Section 2: Direct Monthly Auto-Save (Non-Stop) */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[var(--surface)] via-[var(--surface)] to-teal-500/5 border border-teal-500/20 shadow-sm space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-500/20 shadow-sm">
+                    <CalendarClock size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-base text-[var(--text-primary)]">{t.directAutoSave}</h3>
+                      {autoSavePlan.isActive ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          {t.autoSaveRunning}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          {t.autoSaveStopped}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">{t.directAutoSaveSub}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <button
+                    onClick={() => setAutoSaveModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] inline-flex items-center gap-1.5 shadow-sm transition-all"
+                  >
+                    <Pencil size={13} />
+                    <span>{t.editAutoSave}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Parameters & Live Metrics Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="p-3.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)]">
+                  <span className="text-[11px] font-semibold text-[var(--text-muted)] block">{t.dayStart}</span>
+                  <span className="text-sm font-bold text-[var(--text-primary)] mt-0.5 block">{autoSavePlan.startDate || 'Today'}</span>
+                  <span className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold">{t.autoSavePerpetual}</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)]">
+                  <span className="text-[11px] font-semibold text-[var(--text-muted)] block">{t.dayOfMonth}</span>
+                  <span className="text-sm font-bold text-[var(--text-primary)] mt-0.5 block">
+                    {t.dayPrefix} {autoSavePlan.dayOfMonth} {t.daySuffix}
+                  </span>
+                  <span className="text-[10px] text-[var(--text-muted)]">{t.dayOfMonthSub}</span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)]">
+                  <span className="text-[11px] font-semibold text-[var(--text-muted)] block">{t.monthlyAmount}</span>
+                  <span className="text-sm font-bold text-teal-600 dark:text-teal-400 mt-0.5 block">
+                    {formatMoney(autoSavePlan.amount)} / mo
+                  </span>
+                  <span className="text-[10px] text-[var(--text-muted)]">
+                    {accounts.find((a) => a.id === autoSavePlan.accountId)?.name || t.directVault}
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)]">
+                  <span className="text-[11px] font-semibold text-[var(--text-muted)] block">{t.totalAccumulated}</span>
+                  <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+                    {formatMoney(autoSavePlan.accumulated || 0)}
+                  </span>
+                  <span className="text-[10px] text-[var(--text-muted)]">{t.totalSavedSoFar}</span>
+                </div>
+              </div>
+
+              {/* ACTION ROW: SINGLE BUTTON FOR STOP / RESUME */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                <button
+                  onClick={handleToggleAutoSave}
+                  className={`w-full sm:flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-[0.99] ${
+                    autoSavePlan.isActive
+                      ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/20'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                  }`}
+                >
+                  {autoSavePlan.isActive ? (
+                    <>
+                      <CircleStop size={18} className="animate-pulse" />
+                      <span>{t.stopAutoSave}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play size={18} />
+                      <span>{t.resumeAutoSave}</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={handleTriggerAutoSaveDeposit}
+                  className="w-full sm:w-auto px-4 py-3 rounded-xl bg-[var(--input-bg)] hover:bg-[var(--surface-hover)] border border-[var(--border)] text-xs font-bold text-[var(--text-primary)] inline-flex items-center justify-center gap-2 transition-all shadow-sm"
+                >
+                  <Plus size={15} className="text-teal-500" />
+                  <span>{t.depositNow} ({formatMoney(autoSavePlan.amount)})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Section 3: Savings Goals */}
             <div className="p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
@@ -2851,6 +3152,20 @@ export default function App() {
         <InstallGuideModal
           open={installModalOpen}
           onClose={() => setInstallModalOpen(false)}
+          t={t}
+        />
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MODAL 13: DIRECT MONTHLY AUTO-SAVE SETUP MODAL
+          ═══════════════════════════════════════════════════════════════ */}
+      {autoSaveModalOpen && (
+        <AutoSaveModal
+          open={autoSaveModalOpen}
+          onClose={() => setAutoSaveModalOpen(false)}
+          plan={autoSavePlan}
+          onSave={handleSaveAutoSavePlan}
+          accounts={accounts}
           t={t}
         />
       )}
@@ -4175,3 +4490,137 @@ function InstallGuideModal({ open, onClose, t }) {
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SUB-COMPONENT: DIRECT MONTHLY AUTO-SAVE SETUP MODAL
+   ═══════════════════════════════════════════════════════════════ */
+function AutoSaveModal({ open, onClose, plan, onSave, accounts, t }) {
+  const [title, setTitle] = useState(plan.title || 'Monthly Direct Stash');
+  const [amount, setAmount] = useState(plan.amount || 50);
+  const [startDate, setStartDate] = useState(plan.startDate || new Date().toISOString().split('T')[0]);
+  const [dayOfMonth, setDayOfMonth] = useState(plan.dayOfMonth || 1);
+  const [accountId, setAccountId] = useState(plan.accountId || accounts[0]?.id || '');
+
+  if (!open) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      title,
+      amount: parseFloat(amount) || 0,
+      startDate,
+      dayOfMonth: Math.min(31, Math.max(1, parseInt(dayOfMonth, 10) || 1)),
+      accountId,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-md bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-2xl space-y-5 animate-slide-up">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 flex items-center justify-center">
+              <CalendarClock size={18} />
+            </div>
+            <div>
+              <h3 className="font-bold text-base text-[var(--text-primary)]">{t.configureAutoSave}</h3>
+              <p className="text-[11px] text-[var(--text-muted)]">{t.autoSavePerpetual}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.goalName}</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.dayStart}</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.dayOfMonth} (1-31)</label>
+              <input
+                type="number"
+                min="1"
+                max="31"
+                value={dayOfMonth}
+                onChange={(e) => setDayOfMonth(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.monthlyAmount} ($)</label>
+              <input
+                type="number"
+                step="any"
+                min="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">{t.account}</label>
+              <select
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[var(--input-bg)] border border-[var(--border)] text-xs text-[var(--text-primary)] focus:outline-none focus:border-teal-500"
+              >
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[var(--border)]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"
+            >
+              {t.cancel}
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 rounded-xl text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 shadow-md shadow-teal-600/20"
+            >
+              {t.save}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
