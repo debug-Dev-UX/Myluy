@@ -9,7 +9,9 @@ import {
   createUserWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 
 export const firebaseConfig = {
@@ -30,6 +32,13 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
+// Explicitly lock session persistence to localStorage (Never log out on app close)
+try {
+  setPersistence(auth, browserLocalPersistence);
+} catch (e) {
+  console.warn("Auth persistence init notice:", e);
+}
+
 export {
   doc,
   setDoc,
@@ -40,7 +49,9 @@ export {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  setPersistence,
+  browserLocalPersistence
 };
 
 // Initialize Analytics if supported in the browser

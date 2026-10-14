@@ -716,6 +716,20 @@ function genId(prefix = 'id') {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
 }
 
+// Persistent Session Cookies for Auto-Login across Browser / Device Restarts
+function setAppCookie(name, value, days = 365) {
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  } catch {}
+}
+
+function deleteAppCookie(name) {
+  try {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+  } catch {}
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MAIN APP COMPONENT
    ═══════════════════════════════════════════════════════════════ */
@@ -729,10 +743,10 @@ export default function App() {
   const [isRateFetching, setIsRateFetching] = useState(false);
   const [rateLatencyMs, setRateLatencyMs] = useState(38);
 
-  // Firebase Cloud Multi-Device Synchronization (Same data on Phone, Laptop, Tablet)
-  const [currentUser, setCurrentUser] = useState(null);
+  // Firebase Cloud Multi-Device Synchronization (Persistent Session - No Re-Login needed until user clicks Logout)
+  const [currentUser, setCurrentUser] = useState(() => loadLS('myluy_auth_session', null));
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [cloudSyncStatus, setCloudSyncStatus] = useState('offline'); // 'synced' | 'syncing' | 'offline' | 'error'
+  const [cloudSyncStatus, setCloudSyncStatus] = useState(() => loadLS('myluy_auth_session', null) ? 'synced' : 'offline');
   const [cloudLastSynced, setCloudLastSynced] = useState(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const isRemoteUpdatingRef = useRef(false);
@@ -976,10 +990,20 @@ export default function App() {
     let unsubscribeSnapshot = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setIsAuthLoading(false);
-
       if (user) {
+        // Persist session to LocalStorage & 1-Year Session Cookie (Never logout on close)
+        const sessionProfile = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        };
+        saveLS('myluy_auth_session', sessionProfile);
+        setAppCookie('myluy_session_user', user.uid, 365);
+        setAppCookie('myluy_session_email', user.email || '', 365);
+
+        setCurrentUser(user);
+        setIsAuthLoading(false);
         setCloudSyncStatus('syncing');
         const userDocRef = doc(db, 'users', user.uid);
 
@@ -1020,10 +1044,15 @@ export default function App() {
           }
         );
       } else {
+        saveLS('myluy_auth_session', null);
+        deleteAppCookie('myluy_session_user');
+        deleteAppCookie('myluy_session_email');
         if (unsubscribeSnapshot) {
           unsubscribeSnapshot();
           unsubscribeSnapshot = null;
         }
+        setCurrentUser(null);
+        setIsAuthLoading(false);
         setCloudSyncStatus('offline');
       }
     });
@@ -7170,7 +7199,10 @@ function AuthSyncModal({
     setIsSubmitting(true);
     try {
       await signOut(auth);
-      if (showToast) showToast('Signed out of cloud sync', 'info');
+      saveLS('myluy_auth_session', null);
+      deleteAppCookie('myluy_session_user');
+      deleteAppCookie('myluy_session_email');
+      if (showToast) showToast('Logged out of cloud sync', 'info');
       onClose();
     } catch (err) {
       console.error('Sign out error:', err);
@@ -7250,10 +7282,19 @@ function AuthSyncModal({
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              {/* Permanent Session Status */}
+              <div className="pt-2 border-t border-slate-200/60 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300">
+                <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                  <ShieldCheck size={13} />
+                  <span>Permanent Session Active</span>
+                </span>
+                <span className="text-[10px] text-slate-400">Never logs out on app close</span>
+              </div>
+
+              <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                 <span>Last Cloud Sync: <strong className="text-slate-700 dark:text-slate-200 font-semibold">{cloudLastSynced || 'Just now'}</strong></span>
                 <span className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-white/10 text-indigo-600 dark:text-indigo-400 font-mono text-[10px]">
-                  ID: {currentUser.uid.slice(0, 8)}...
+                  ID: {currentUser.uid?.slice(0, 8)}...
                 </span>
               </div>
             </div>
