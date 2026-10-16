@@ -12,7 +12,16 @@ import {
   GraduationCap, Coffee, Share2, HelpCircle, ArrowRightLeft, Percent, Gift,
   CircleStop, Play, CalendarClock, Infinity as InfinityIcon,
   ArrowDownLeft, History, Minus, Eye, EyeOff, Radio, Loader2, Copy,
-  Cloud, CloudOff, LogIn, LogOut, User, Mail, Lock
+  Cloud, CloudOff, LogIn, LogOut, User, Mail, Lock,
+  ShoppingCart, Store, Package, Receipt, Banknote,
+  Pizza, Beer, Wine, Apple, Cake,
+  Bus, Train, Bike, Fuel, Ship,
+  Building, Hotel, Key, Bed,
+  Music, Gamepad2, Tv, Headphones, Camera, Scissors, Palette,
+  Activity, Stethoscope, Pill, Heart, Smile,
+  Book, BookOpen, Library,
+  Baby, Dog, Cat, Flower2, TreePine, Trees, Shirt,
+  Star, CloudRain, Shield, Umbrella
 } from 'lucide-react';
 import {
   auth,
@@ -284,6 +293,15 @@ const dict = {
     categoryColor: 'Color',
     incomeCategories: 'Income Categories',
     expenseCategories: 'Expense Categories',
+    allCategoriesTitle: 'All Categories',
+    saveChanges: 'Save Changes',
+    cancelEdit: 'Cancel',
+    editingCategory: 'Editing Category',
+    editing: 'Editing',
+    restoreDefaults: 'Restore Default Categories',
+    restoreDefaultsConfirm: 'Restore categories back to default starter categories?',
+    deleteCategoryConfirm: 'Are you sure you want to delete this category?',
+    cantDeleteLastCategory: 'You must keep at least one category.',
 
     // App & PWA
     installApp: 'Install App',
@@ -574,6 +592,15 @@ const dict = {
     categoryColor: 'ពណ៌',
     incomeCategories: 'ប្រភេទចំណូល',
     expenseCategories: 'ប្រភេទចំណាយ',
+    allCategoriesTitle: 'ប្រភេទទាំងអស់',
+    saveChanges: 'រក្សាទុកការកែប្រែ',
+    cancelEdit: 'បោះបង់',
+    editingCategory: 'កំពុងកែប្រែប្រភេទ',
+    editing: 'កំពុងកែ',
+    restoreDefaults: 'ស្តារប្រភេទដើមឡើងវិញ',
+    restoreDefaultsConfirm: 'តើអ្នកចង់កំណត់ប្រភេទទាំងអស់ទៅដើមវិញទេ?',
+    deleteCategoryConfirm: 'តើអ្នកប្រាកដជាចង់លុបប្រភេទនេះមែនទេ?',
+    cantDeleteLastCategory: 'អ្នកត្រូវតែទុកយ៉ាងហោចណាស់មួយប្រភេទ។',
 
     // App & PWA
     installApp: 'ដំឡើងកម្មវិធីលើអេក្រង់',
@@ -621,46 +648,237 @@ const dict = {
    LUCIDE ICON MAP (ZERO EMOJIS)
    ═══════════════════════════════════════════════════════════════ */
 const ICON_COMPONENTS = {
+  // Finance & Work
   briefcase: Briefcase,
+  work: Briefcase,
+  job: Briefcase,
   laptop: Laptop,
+  computer: Laptop,
+  tech: Laptop,
   'trending-up': TrendingUp,
   'trending-down': TrendingDown,
-  gift: Gift,
-  utensils: Utensils,
-  car: Car,
-  home: Home,
-  zap: Zap,
-  'shopping-bag': ShoppingBag,
-  'heart-pulse': HeartPulse,
-  smartphone: Smartphone,
-  coffee: Coffee,
-  film: Film,
-  dumbbell: Dumbbell,
-  plane: Plane,
-  'graduation-cap': GraduationCap,
   'credit-card': CreditCard,
+  creditcard: CreditCard,
   'piggy-bank': PiggyBank,
+  piggybank: PiggyBank,
+  savings: PiggyBank,
   wallet: Wallet,
   landmark: Landmark,
+  bank: Landmark,
   coins: Coins,
-  'shield-check': ShieldCheck,
-  trophy: Trophy,
-  award: Award,
-  flame: Flame,
-  'refresh-cw': RefreshCw,
+  coin: Coins,
   'hand-coins': HandCoins,
+  handcoins: HandCoins,
+  loan: HandCoins,
+  banknote: Banknote,
+  cash: Banknote,
+  money: Banknote,
+  receipt: Receipt,
+  bill: Receipt,
+  'dollar-sign': DollarSign,
+  dollar: DollarSign,
+  percent: Percent,
+
+  // Shopping & Goods
+  'shopping-bag': ShoppingBag,
+  shoppingbag: ShoppingBag,
+  'shopping-cart': ShoppingCart,
+  shoppingcart: ShoppingCart,
+  cart: ShoppingCart,
+  store: Store,
+  shop: Store,
+  market: Store,
+  package: Package,
+  delivery: Package,
+  gift: Gift,
+  tag: Tag,
+  shirt: Shirt,
+  clothes: Shirt,
+  clothing: Shirt,
+
+  // Food & Drinks
+  utensils: Utensils,
+  food: Utensils,
+  dining: Utensils,
+  restaurant: Utensils,
+  coffee: Coffee,
+  cafe: Coffee,
+  drink: Coffee,
+  pizza: Pizza,
+  fastfood: Pizza,
+  beer: Beer,
+  wine: Wine,
+  bar: Wine,
+  apple: Apple,
+  fruit: Apple,
+  grocery: Apple,
+  cake: Cake,
+  dessert: Cake,
+  bakery: Cake,
+
+  // Travel & Transport
+  car: Car,
+  vehicle: Car,
+  taxi: Car,
+  bus: Bus,
+  transit: Bus,
+  train: Train,
+  metro: Train,
+  plane: Plane,
+  flight: Plane,
+  travel: Plane,
+  bike: Bike,
+  bicycle: Bike,
+  fuel: Fuel,
+  gas: Fuel,
+  petrol: Fuel,
+  gasoline: Fuel,
+  ship: Ship,
+  boat: Ship,
+
+  // Housing & Living
+  home: Home,
+  house: Home,
+  rent: Home,
+  building: Building,
+  apartment: Building,
+  hotel: Hotel,
+  bed: Bed,
+  hotelstay: Bed,
+  key: Key,
+  zap: Zap,
+  electricity: Zap,
+  utilities: Zap,
+
+  // Tech & Gadgets
+  smartphone: Smartphone,
+  phone: Smartphone,
+  mobile: Smartphone,
+  tv: Tv,
+  television: Tv,
+  headphones: Headphones,
+  audio: Headphones,
+  camera: Camera,
+  photo: Camera,
+  'gamepad-2': Gamepad2,
+  gamepad: Gamepad2,
+  game: Gamepad2,
+  gaming: Gamepad2,
+
+  // Health, Fitness & Self-care
+  'heart-pulse': HeartPulse,
+  heartpulse: HeartPulse,
+  health: HeartPulse,
+  medical: HeartPulse,
+  heart: Heart,
+  love: Heart,
+  activity: Activity,
+  stethoscope: Stethoscope,
+  doctor: Stethoscope,
+  hospital: Stethoscope,
+  pill: Pill,
+  medicine: Pill,
+  pharmacy: Pill,
+  dumbbell: Dumbbell,
+  gym: Dumbbell,
+  fitness: Dumbbell,
+  sport: Dumbbell,
+  workout: Dumbbell,
+  smile: Smile,
+  happy: Smile,
+  beauty: Smile,
+  scissors: Scissors,
+  haircut: Scissors,
+  salon: Scissors,
+
+  // Education & Knowledge
+  'graduation-cap': GraduationCap,
+  graduationcap: GraduationCap,
+  education: GraduationCap,
+  school: GraduationCap,
+  study: GraduationCap,
+  university: GraduationCap,
+  book: Book,
+  books: Book,
+  'book-open': BookOpen,
+  bookopen: BookOpen,
+  library: Library,
+
+  // Entertainment & Life
+  film: Film,
+  movie: Film,
+  cinema: Film,
+  netflix: Film,
+  music: Music,
+  song: Music,
+  spotify: Music,
+  palette: Palette,
+  art: Palette,
+  hobby: Palette,
+  trophy: Trophy,
+  winner: Trophy,
+  award: Award,
+  medal: Award,
+  flame: Flame,
+  fire: Flame,
+  star: Star,
+  sparkles: Sparkles,
+  magic: Sparkles,
+  'shield-check': ShieldCheck,
+  shield: Shield,
+  security: Shield,
+  insurance: Shield,
+  'refresh-cw': RefreshCw,
+  refresh: RefreshCw,
+  subscription: RefreshCw,
+  clock: Clock,
+  time: Clock,
+  calendar: Calendar,
+  globe: Globe,
+
+  // Family, Pets & Nature
+  baby: Baby,
+  kids: Baby,
+  child: Baby,
+  dog: Dog,
+  pet: Dog,
+  puppy: Dog,
+  cat: Cat,
+  kitten: Cat,
+  'flower-2': Flower2,
+  flower: Flower2,
+  trees: Trees,
+  'tree-pine': TreePine,
+  tree: TreePine,
+  nature: TreePine,
+  park: TreePine,
+  umbrella: Umbrella,
+  'cloud-rain': CloudRain,
+  rain: CloudRain,
+  sun: Sun,
+  moon: Moon,
 };
 
 function DynamicIcon({ name, className = 'w-4 h-4', size }) {
-  const Comp = ICON_COMPONENTS[name] || Tag;
+  const normalizedKey = (name || '').toLowerCase().trim();
+  const Comp =
+    ICON_COMPONENTS[normalizedKey] ||
+    ICON_COMPONENTS[normalizedKey.replace(/\s+/g, '-')] ||
+    ICON_COMPONENTS[normalizedKey.replace(/[-_\s]/g, '')] ||
+    Tag;
   return <Comp className={className} size={size} />;
 }
 
 const AVAILABLE_ICONS = [
-  'briefcase', 'laptop', 'trending-up', 'gift', 'utensils',
-  'car', 'home', 'zap', 'shopping-bag', 'heart-pulse',
-  'smartphone', 'coffee', 'film', 'dumbbell', 'plane',
-  'graduation-cap', 'credit-card', 'piggy-bank', 'wallet', 'landmark'
+  'utensils', 'coffee', 'pizza', 'apple', 'beer', 'wine', 'cake',
+  'shopping-bag', 'shopping-cart', 'store', 'shirt', 'package', 'gift', 'tag',
+  'car', 'bus', 'train', 'plane', 'bike', 'fuel', 'ship',
+  'home', 'building', 'hotel', 'bed', 'key', 'zap',
+  'briefcase', 'laptop', 'wallet', 'credit-card', 'banknote', 'coins', 'hand-coins', 'piggy-bank', 'landmark', 'receipt',
+  'heart-pulse', 'stethoscope', 'pill', 'dumbbell', 'smile', 'scissors',
+  'smartphone', 'tv', 'gamepad-2', 'headphones', 'camera', 'film', 'music', 'palette',
+  'book', 'graduation-cap', 'library', 'baby', 'dog', 'cat', 'tree-pine', 'flower-2',
+  'star', 'trophy', 'flame', 'sparkles', 'shield-check', 'umbrella', 'globe', 'refresh-cw'
 ];
 
 const PALETTE = [
@@ -767,8 +985,26 @@ export default function App() {
   // Pure Zero Data States (NO DEMO DATA PRE-LOADED - 100% CLEAN START FROM 0)
   const [accounts, setAccounts] = useState(() => loadLS('myluy_v3_accounts', DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 }))));
   const [transactions, setTransactions] = useState(() => loadLS('myluy_v3_txs', []));
-  const [customIncomeCats, setCustomIncomeCats] = useState(() => loadLS('myluy_v3_inc_cats', []));
-  const [customExpenseCats, setCustomExpenseCats] = useState(() => loadLS('myluy_v3_exp_cats', []));
+  const [incomeCategories, setIncomeCategories] = useState(() => {
+    const v4 = loadLS('myluy_v4_income_cats', null);
+    if (Array.isArray(v4) && v4.length > 0) return v4;
+    const v3 = loadLS('myluy_v3_inc_cats', null);
+    if (Array.isArray(v3) && v3.length > 0) {
+      const existingIds = new Set(DEFAULT_INCOME_CATS.map((c) => c.id));
+      return [...DEFAULT_INCOME_CATS, ...v3.filter((c) => !existingIds.has(c.id))];
+    }
+    return DEFAULT_INCOME_CATS;
+  });
+  const [expenseCategories, setExpenseCategories] = useState(() => {
+    const v4 = loadLS('myluy_v4_expense_cats', null);
+    if (Array.isArray(v4) && v4.length > 0) return v4;
+    const v3 = loadLS('myluy_v3_exp_cats', null);
+    if (Array.isArray(v3) && v3.length > 0) {
+      const existingIds = new Set(DEFAULT_EXPENSE_CATS.map((c) => c.id));
+      return [...DEFAULT_EXPENSE_CATS, ...v3.filter((c) => !existingIds.has(c.id))];
+    }
+    return DEFAULT_EXPENSE_CATS;
+  });
   const [budgetLimits, setBudgetLimits] = useState(() => loadLS('myluy_v3_budgets', []));
   const [savingsGoals, setSavingsGoals] = useState(() => loadLS('myluy_v3_goals', []));
   const [recurringTxs, setRecurringTxs] = useState(() => loadLS('myluy_v3_recurring', []));
@@ -912,8 +1148,8 @@ export default function App() {
   useEffect(() => saveLS('myluy_rate', exchangeRate), [exchangeRate]);
   useEffect(() => saveLS('myluy_v3_accounts', accounts), [accounts]);
   useEffect(() => saveLS('myluy_v3_txs', transactions), [transactions]);
-  useEffect(() => saveLS('myluy_v3_inc_cats', customIncomeCats), [customIncomeCats]);
-  useEffect(() => saveLS('myluy_v3_exp_cats', customExpenseCats), [customExpenseCats]);
+  useEffect(() => saveLS('myluy_v4_income_cats', incomeCategories), [incomeCategories]);
+  useEffect(() => saveLS('myluy_v4_expense_cats', expenseCategories), [expenseCategories]);
   useEffect(() => saveLS('myluy_v3_budgets', budgetLimits), [budgetLimits]);
   useEffect(() => saveLS('myluy_v3_goals', savingsGoals), [savingsGoals]);
   useEffect(() => saveLS('myluy_v3_recurring', recurringTxs), [recurringTxs]);
@@ -939,8 +1175,10 @@ export default function App() {
     recurringTxs,
     debts,
     autoSavePlan,
-    customIncomeCats,
-    customExpenseCats,
+    incomeCategories,
+    expenseCategories,
+    customIncomeCats: incomeCategories.filter((c) => !DEFAULT_INCOME_CATS.some((d) => d.id === c.id)),
+    customExpenseCats: expenseCategories.filter((c) => !DEFAULT_EXPENSE_CATS.some((d) => d.id === c.id)),
     userXp,
     streakDays,
     completed52Weeks,
@@ -1021,8 +1259,18 @@ export default function App() {
               if (Array.isArray(data.recurringTxs)) setRecurringTxs(data.recurringTxs);
               if (Array.isArray(data.debts)) setDebts(data.debts);
               if (data.autoSavePlan) setAutoSavePlan(data.autoSavePlan);
-              if (Array.isArray(data.customIncomeCats)) setCustomIncomeCats(data.customIncomeCats);
-              if (Array.isArray(data.customExpenseCats)) setCustomExpenseCats(data.customExpenseCats);
+              if (Array.isArray(data.incomeCategories)) {
+                setIncomeCategories(data.incomeCategories);
+              } else if (Array.isArray(data.customIncomeCats)) {
+                const existingIds = new Set(DEFAULT_INCOME_CATS.map((c) => c.id));
+                setIncomeCategories([...DEFAULT_INCOME_CATS, ...data.customIncomeCats.filter((c) => !existingIds.has(c.id))]);
+              }
+              if (Array.isArray(data.expenseCategories)) {
+                setExpenseCategories(data.expenseCategories);
+              } else if (Array.isArray(data.customExpenseCats)) {
+                const existingIds = new Set(DEFAULT_EXPENSE_CATS.map((c) => c.id));
+                setExpenseCategories([...DEFAULT_EXPENSE_CATS, ...data.customExpenseCats.filter((c) => !existingIds.has(c.id))]);
+              }
               if (typeof data.userXp === 'number') setUserXp(data.userXp);
               if (typeof data.streakDays === 'number') setStreakDays(data.streakDays);
               if (Array.isArray(data.completed52Weeks)) setCompleted52Weeks(data.completed52Weeks);
@@ -1082,8 +1330,8 @@ export default function App() {
     recurringTxs,
     debts,
     autoSavePlan,
-    customIncomeCats,
-    customExpenseCats,
+    incomeCategories,
+    expenseCategories,
     userXp,
     streakDays,
     completed52Weeks,
@@ -1240,15 +1488,18 @@ export default function App() {
   }, [currency, exchangeRate]);
 
   // All combined categories
-  const allIncomeCats = useMemo(() => [...DEFAULT_INCOME_CATS, ...customIncomeCats], [customIncomeCats]);
-  const allExpenseCats = useMemo(() => [...DEFAULT_EXPENSE_CATS, ...customExpenseCats], [customExpenseCats]);
-  const allCategories = useMemo(() => [...allIncomeCats, ...allExpenseCats], [allIncomeCats, allExpenseCats]);
+  const allIncomeCats = incomeCategories;
+  const allExpenseCats = expenseCategories;
+  const allCategories = useMemo(() => [...incomeCategories, ...expenseCategories], [incomeCategories, expenseCategories]);
 
   const getCategoryDetails = useCallback((catId) => {
     const found = allCategories.find((c) => c.id === catId);
     if (found) {
+      const name = typeof found.name === 'object'
+        ? (found.name[lang] || found.name.en || found.name.kh || catId)
+        : (found.name || catId);
       return {
-        name: found.name[lang] || found.name.en,
+        name,
         icon: found.icon || 'tag',
         color: found.color || '#6366f1',
       };
@@ -1267,12 +1518,17 @@ export default function App() {
     });
 
     const accountSum = accounts.reduce((acc, a) => acc + (Number(a.balance) || 0), 0);
-    const totalBalance = accountSum;
+    // Loan money (+ active borrowed loans) added directly to total money
+    const activeLoanMoney = debts
+      .filter((d) => d.type === 'borrowed')
+      .reduce((sum, d) => sum + Math.max(0, (Number(d.total) || 0) - (Number(d.paid) || 0)), 0);
+
+    const totalBalance = accountSum + activeLoanMoney;
     const netSavings = income - expenses;
     const savingsRate = income > 0 ? Math.max(0, Math.round(((income - expenses) / income) * 100)) : 0;
 
-    return { income, expenses, totalBalance, netSavings, savingsRate };
-  }, [transactions, accounts]);
+    return { income, expenses, totalBalance, netSavings, savingsRate, accountSum, activeLoanMoney };
+  }, [transactions, accounts, debts]);
 
   // Real-time Category Spending
   const categorySpending = useMemo(() => {
@@ -2186,10 +2442,16 @@ export default function App() {
                     <span className="text-[10px] sm:text-[11px] font-mono tracking-wider sm:tracking-widest uppercase font-semibold text-indigo-200/90 truncate">MY LUY PLATINUM</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                   <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-white/10 text-white/90 text-[10px] font-bold tracking-wide uppercase border border-white/10 backdrop-blur-md truncate max-w-[130px] sm:max-w-none">
                     {currency} • {accounts.length} {t.accountsTab}
                   </span>
+                  {totals.activeLoanMoney > 0 && (
+                    <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-amber-500/25 text-amber-300 text-[10px] font-bold tracking-wide uppercase border border-amber-500/40 backdrop-blur-md flex items-center gap-1">
+                      <HandCoins size={11} />
+                      <span>+ {formatMoney(totals.activeLoanMoney)} {t.debtTab.split(' ')[0]}</span>
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -4605,23 +4867,42 @@ export default function App() {
         <CategoryAdminModal
           open={categoryModalOpen}
           onClose={() => setCategoryModalOpen(false)}
-          incomeCats={customIncomeCats}
-          expenseCats={customExpenseCats}
+          incomeCats={incomeCategories}
+          expenseCats={expenseCategories}
           onAddCategory={(cat) => {
             if (cat.type === 'income') {
-              setCustomIncomeCats((prev) => [...prev, cat]);
+              setIncomeCategories((prev) => [...prev, cat]);
             } else {
-              setCustomExpenseCats((prev) => [...prev, cat]);
+              setExpenseCategories((prev) => [...prev, cat]);
             }
             showToast(t.addCategory, 'success');
           }}
+          onUpdateCategory={(cat) => {
+            if (cat.type === 'income') {
+              setIncomeCategories((prev) => prev.map((c) => (c.id === cat.id ? cat : c)));
+            } else {
+              setExpenseCategories((prev) => prev.map((c) => (c.id === cat.id ? cat : c)));
+            }
+            showToast(t.update, 'success');
+          }}
           onDeleteCategory={(catId, type) => {
             if (type === 'income') {
-              setCustomIncomeCats((prev) => prev.filter((c) => c.id !== catId));
+              setIncomeCategories((prev) => prev.filter((c) => c.id !== catId));
             } else {
-              setCustomExpenseCats((prev) => prev.filter((c) => c.id !== catId));
+              setExpenseCategories((prev) => prev.filter((c) => c.id !== catId));
             }
             showToast(t.delete, 'success');
+          }}
+          onResetDefaultCategories={(tab) => {
+            if (tab === 'income') {
+              setIncomeCategories(DEFAULT_INCOME_CATS);
+            } else if (tab === 'expense') {
+              setExpenseCategories(DEFAULT_EXPENSE_CATS);
+            } else {
+              setIncomeCategories(DEFAULT_INCOME_CATS);
+              setExpenseCategories(DEFAULT_EXPENSE_CATS);
+            }
+            showToast(t.systemSynced || 'Restored default categories', 'success');
           }}
           t={t}
           lang={lang}
@@ -5898,32 +6179,131 @@ function DebtPayModal({ open, onClose, debt, exchangeRate, onConfirm, t }) {
 /* ═══════════════════════════════════════════════════════════════
    SUB-COMPONENT: CATEGORY ADMIN MODAL
    ═══════════════════════════════════════════════════════════════ */
-function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCategory, onDeleteCategory, t, lang }) {
+function CategoryAdminModal({
+  open,
+  onClose,
+  incomeCats,
+  expenseCats,
+  onAddCategory,
+  onUpdateCategory,
+  onDeleteCategory,
+  onResetDefaultCategories,
+  t,
+  lang,
+}) {
   const [tab, setTab] = useState('expense');
+  const [editingCat, setEditingCat] = useState(null);
   const [nameEn, setNameEn] = useState('');
   const [nameKh, setNameKh] = useState('');
   const [icon, setIcon] = useState('shopping-bag');
+  const [iconSearch, setIconSearch] = useState('');
   const [color, setColor] = useState('#6366f1');
+  const formRef = useRef(null);
+
+  const filteredIcons = useMemo(() => {
+    if (!iconSearch.trim()) return AVAILABLE_ICONS;
+    const q = iconSearch.toLowerCase().trim();
+    const matched = Object.keys(ICON_COMPONENTS).filter((k) => k.includes(q));
+    return Array.from(new Set([...AVAILABLE_ICONS.filter((ic) => ic.includes(q)), ...matched])).slice(0, 42);
+  }, [iconSearch]);
+
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    handleCancelEdit();
+    if (newTab === 'income') {
+      setIcon('briefcase');
+      setColor('#10b981');
+    } else {
+      setIcon('shopping-bag');
+      setColor('#6366f1');
+    }
+  };
+
+  const handleStartEdit = (cat) => {
+    setEditingCat(cat);
+    setNameEn(typeof cat.name === 'object' ? (cat.name.en || '') : (cat.name || ''));
+    setNameKh(typeof cat.name === 'object' ? (cat.name.kh || '') : '');
+    const currentIcon = cat.icon || (tab === 'income' ? 'briefcase' : 'shopping-bag');
+    setIcon(currentIcon);
+    setIconSearch(currentIcon);
+    setColor(cat.color || '#6366f1');
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCat(null);
+    setNameEn('');
+    setNameKh('');
+    setIconSearch('');
+    setIcon(tab === 'income' ? 'briefcase' : 'shopping-bag');
+    setColor(tab === 'income' ? '#10b981' : '#6366f1');
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!nameEn) return;
-    onAddCategory({
-      id: genId('cat'),
-      name: { en: nameEn, kh: nameKh || nameEn },
-      icon,
-      color,
-      type: tab,
-    });
-    setNameEn('');
-    setNameKh('');
+    const trimmedEn = nameEn.trim();
+    const trimmedKh = nameKh.trim();
+    if (!trimmedEn && !trimmedKh) return;
+
+    if (editingCat) {
+      onUpdateCategory({
+        ...editingCat,
+        name: {
+          en: trimmedEn || trimmedKh,
+          kh: trimmedKh || trimmedEn,
+        },
+        icon,
+        color,
+        type: tab,
+      });
+      handleCancelEdit();
+    } else {
+      onAddCategory({
+        id: genId('cat'),
+        name: {
+          en: trimmedEn || trimmedKh,
+          kh: trimmedKh || trimmedEn,
+        },
+        icon,
+        color,
+        type: tab,
+      });
+      setNameEn('');
+      setNameKh('');
+    }
+  };
+
+  const currentList = tab === 'income' ? incomeCats : expenseCats;
+
+  const handleDelete = (cat) => {
+    if (currentList.length <= 1) {
+      alert(t.cantDeleteLastCategory || 'You must keep at least one category.');
+      return;
+    }
+    const catDisplayName = (typeof cat.name === 'object' ? (cat.name[lang] || cat.name.en || cat.name.kh) : cat.name) || cat.id;
+    if (window.confirm(`${t.deleteCategoryConfirm || 'Are you sure you want to delete this category?'} ("${catDisplayName}")`)) {
+      if (editingCat?.id === cat.id) {
+        handleCancelEdit();
+      }
+      onDeleteCategory(cat.id, tab);
+    }
+  };
+
+  const handleResetDefaults = () => {
+    if (window.confirm(t.restoreDefaultsConfirm || 'Restore categories back to default starter categories?')) {
+      handleCancelEdit();
+      onResetDefaultCategories(tab);
+    }
   };
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto" onClick={onClose}>
-      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-6 space-y-4 max-h-[85vh] overflow-y-auto animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-md my-auto bg-white dark:bg-[#181d38] rounded-3xl border border-slate-200 dark:border-indigo-500/25 shadow-2xl p-5 sm:p-6 space-y-4 max-h-[88vh] overflow-y-auto animate-slide-up text-slate-900 dark:text-white" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
@@ -5931,6 +6311,7 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
             </div>
             <div>
               <h3 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">{t.categoriesManagement}</h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Edit, add, or delete any category</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
@@ -5942,32 +6323,60 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
         <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 rounded-2xl">
           <button
             type="button"
-            onClick={() => setTab('expense')}
+            onClick={() => handleTabChange('expense')}
             className={`py-2 text-xs font-bold rounded-xl transition-all ${
               tab === 'expense' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            {t.expenseCategories}
+            {t.expenseCategories} ({expenseCats.length})
           </button>
           <button
             type="button"
-            onClick={() => setTab('income')}
+            onClick={() => handleTabChange('income')}
             className={`py-2 text-xs font-bold rounded-xl transition-all ${
               tab === 'income' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            {t.incomeCategories}
+            {t.incomeCategories} ({incomeCats.length})
           </button>
         </div>
 
-        {/* Add Category Form */}
-        <form onSubmit={handleSubmit} className="p-4 rounded-2xl bg-slate-50 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10 space-y-3">
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white">{t.addCategory}</h4>
+        {/* Add / Edit Category Form */}
+        <form ref={formRef} onSubmit={handleSubmit} className={`p-4 rounded-2xl border space-y-3 transition-all ${
+          editingCat
+            ? 'bg-indigo-50/70 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-500/40 ring-1 ring-indigo-500/20'
+            : 'bg-slate-50 dark:bg-[#0f132a] border-slate-200 dark:border-white/10'
+        }`}>
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              {editingCat ? (
+                <>
+                  <Pencil size={13} className="text-indigo-600 dark:text-indigo-400" />
+                  <span>{t.editCategory || 'Edit Category'}</span>
+                </>
+              ) : (
+                <>
+                  <Plus size={13} className="text-indigo-600 dark:text-indigo-400" />
+                  <span>{t.addCategory || 'Create Category'}</span>
+                </>
+              )}
+            </h4>
+            {editingCat && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="text-[11px] font-semibold text-slate-500 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-400 flex items-center gap-1 transition-colors"
+              >
+                <X size={12} />
+                <span>{t.cancelEdit || 'Cancel'}</span>
+              </button>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-2">
             <input
               type="text"
-              required
+              required={!nameKh}
               value={nameEn}
               onChange={(e) => setNameEn(e.target.value)}
               placeholder="Name (EN)"
@@ -5983,15 +6392,53 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] text-slate-600 dark:text-slate-300 font-bold">Select Icon</label>
-            <div className="grid grid-cols-6 gap-1.5 max-h-24 overflow-y-auto pr-1">
-              {AVAILABLE_ICONS.map((ic) => (
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] text-slate-600 dark:text-slate-300 font-bold">{t.categoryIcon || 'Select Icon'}</label>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-slate-400">Icon:</span>
+                <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20">{icon}</span>
+              </div>
+            </div>
+
+            {/* Custom Icon Name Search & Direct Input with Live Preview */}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={iconSearch}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setIconSearch(val);
+                    const clean = val.toLowerCase().trim();
+                    if (clean) setIcon(clean);
+                  }}
+                  placeholder="Type custom icon (e.g. pizza, dog, music, gym...)"
+                  className="w-full pl-8 pr-2.5 py-1.5 rounded-xl bg-white dark:bg-[#181d38] border border-slate-300 dark:border-white/20 text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-indigo-500 shadow-sm"
+                />
+              </div>
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm border border-white/20 transition-all"
+                style={{ backgroundColor: color }}
+                title={`Live Preview: ${icon}`}
+              >
+                <DynamicIcon name={icon} size={16} />
+              </div>
+            </div>
+
+            {/* Icon Picker Grid */}
+            <div className="grid grid-cols-7 sm:grid-cols-9 gap-1.5 max-h-24 overflow-y-auto pr-1 p-1 bg-slate-100/60 dark:bg-black/25 rounded-xl border border-slate-200 dark:border-white/10">
+              {filteredIcons.map((ic) => (
                 <button
                   key={ic}
                   type="button"
-                  onClick={() => setIcon(ic)}
+                  onClick={() => {
+                    setIcon(ic);
+                    setIconSearch(ic);
+                  }}
+                  title={ic}
                   className={`p-1.5 rounded-xl border flex items-center justify-center transition-all ${
-                    icon === ic ? 'border-indigo-500 bg-indigo-500/20 text-indigo-500' : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-slate-300'
+                    icon === ic ? 'border-indigo-500 bg-indigo-500/20 text-indigo-500 scale-105 ring-2 ring-indigo-500/20' : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-slate-300 hover:text-slate-700 dark:hover:text-white'
                   }`}
                 >
                   <DynamicIcon name={ic} size={15} />
@@ -6000,59 +6447,148 @@ function CategoryAdminModal({ open, onClose, incomeCats, expenseCats, onAddCateg
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
-            {PALETTE.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setColor(c)}
-                className={`w-6 h-6 rounded-full border-2 transition-all ${color === c ? 'border-indigo-500 scale-110 shadow-md' : 'border-transparent'}`}
-                style={{ backgroundColor: c }}
-              />
-            ))}
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 active:scale-95 transition-all"
-          >
-            {t.addCategory}
-          </button>
-        </form>
-
-        {/* Existing Custom Categories List */}
-        <div className="space-y-2">
-          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">Custom Categories</h4>
-          {(tab === 'income' ? incomeCats : expenseCats).length === 0 ? (
-            <p className="text-xs text-slate-500 dark:text-slate-400">No custom categories added yet.</p>
-          ) : (
-            <div className="space-y-1.5">
-              {(tab === 'income' ? incomeCats : expenseCats).map((cat) => (
-                <div
-                  key={cat.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0f132a] border border-slate-200 dark:border-white/10"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs shadow-sm"
-                      style={{ backgroundColor: cat.color }}
-                    >
-                      <DynamicIcon name={cat.icon} size={14} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
-                      {cat.name[lang] || cat.name.en}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onDeleteCategory(cat.id, tab)}
-                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+          <div className="space-y-1">
+            <label className="text-[11px] text-slate-600 dark:text-slate-300 font-bold">{t.categoryColor || 'Select Color'}</label>
+            <div className="flex items-center gap-2 pt-1 flex-wrap">
+              {PALETTE.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={`w-6 h-6 rounded-full border-2 transition-all ${color === c ? 'border-indigo-500 scale-125 shadow-md ring-2 ring-indigo-500/30' : 'border-transparent hover:scale-110'}`}
+                  style={{ backgroundColor: c }}
+                />
               ))}
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            {editingCat && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="w-1/3 py-2.5 rounded-xl border border-slate-300 dark:border-white/20 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 text-xs font-bold transition-all"
+              >
+                {t.cancelEdit || 'Cancel'}
+              </button>
+            )}
+            <button
+              type="submit"
+              className={`py-2.5 rounded-xl text-white text-xs font-bold shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5 ${
+                editingCat
+                  ? 'flex-1 bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
+                  : 'w-full bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
+              }`}
+            >
+              {editingCat ? (
+                <>
+                  <Check size={14} />
+                  <span>{t.saveChanges || 'Save Changes'}</span>
+                </>
+              ) : (
+                <>
+                  <Plus size={14} />
+                  <span>{t.addCategory || 'Create Category'}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+
+        {/* All Categories List */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">
+              {t.allCategoriesTitle || 'All Categories'} ({currentList.length})
+            </h4>
+            <span className="text-[10px] text-slate-400 dark:text-slate-400">
+              {tab === 'income' ? t.income : t.expense}
+            </span>
+          </div>
+
+          {currentList.length === 0 ? (
+            <p className="text-xs text-slate-500 dark:text-slate-400 py-3 text-center">No categories found.</p>
+          ) : (
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {currentList.map((cat) => {
+                const isBeingEdited = editingCat?.id === cat.id;
+                const displayName = typeof cat.name === 'object' ? (cat.name[lang] || cat.name.en || cat.name.kh) : cat.name;
+                const altName = typeof cat.name === 'object' ? (lang === 'kh' ? cat.name.en : cat.name.kh) : '';
+
+                return (
+                  <div
+                    key={cat.id}
+                    className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
+                      isBeingEdited
+                        ? 'border-indigo-500 bg-indigo-500/10 shadow-sm ring-1 ring-indigo-500/30'
+                        : 'bg-slate-50 dark:bg-[#0f132a] border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs shrink-0 shadow-sm"
+                        style={{ backgroundColor: cat.color }}
+                      >
+                        <DynamicIcon name={cat.icon} size={15} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                            {displayName}
+                          </span>
+                          {isBeingEdited && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-indigo-500 text-white">
+                              {t.editing || 'Editing'}
+                            </span>
+                          )}
+                        </div>
+                        {altName && altName !== displayName && (
+                          <p className="text-[10px] text-slate-400 dark:text-slate-400 truncate">
+                            {altName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0 ml-2">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(cat)}
+                        title={t.edit || 'Edit'}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isBeingEdited
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10'
+                        }`}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(cat)}
+                        title={t.delete || 'Delete'}
+                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
+
+          {/* Restore Defaults Button */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleResetDefaults}
+              className="w-full py-2 text-[11px] font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 flex items-center justify-center gap-1.5 border border-dashed border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+            >
+              <RefreshCw size={12} />
+              <span>{t.restoreDefaults || 'Restore Default Categories'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
